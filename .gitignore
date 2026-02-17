@@ -1,0 +1,38 @@
+# Arquivos de configuração com dados sensíveis
+.env
+
+# Diretório de armazenamento do workspace (dados pessoais)
+workspace-storage/
+
+# Documentação local/pessoal (não commitar)
+ACESSO-WORKSPACE-LOCAL.md
+CONFIGURACAO-COMPLETA.md
+GUIA-PUBLICACAO.md
+PROJECT-SUMMARY.md
+
+# Arquivos temporários do Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# Dados SSH
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backups
+*.bak
+*.old

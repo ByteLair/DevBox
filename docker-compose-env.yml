@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  workspace-dev:
+    build:
+      context: .
+      args:
+        SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
+    container_name: workspace-dev
+    hostname: workspace-dev
+    restart: unless-stopped
+    ports:
+      - "2222:22"
+    volumes:
+      - workspace-data:/home/developer
+    environment:
+      - TZ=America/Sao_Paulo
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+
+volumes:
+  workspace-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/workspace-storage

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Template para criar novos workspaces
+  # Duplique este bloco e ajuste os nomes para cada desenvolvedor
+  
+  workspace-dev1:
+    build: .
+    container_name: workspace-dev1
+    hostname: workspace-dev1
+    restart: unless-stopped
+    ports:
+      - "2222:22"  # Porta SSH customizada para este workspace
+    volumes:
+      - dev1-home:/home/developer  # Volume persistente para /home
+      - dev1-ssh:/home/developer/.ssh  # Chaves SSH persistentes
+    environment:
+      - TZ=America/Sao_Paulo
+    # Limita recursos (opcional)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  # Exemplo de segundo workspace
+  workspace-dev2:
+    build: .
+    container_name: workspace-dev2
+    hostname: workspace-dev2
+    restart: unless-stopped
+    ports:
+      - "2223:22"  # Porta SSH diferente
+    volumes:
+      - dev2-home:/home/developer
+      - dev2-ssh:/home/developer/.ssh
+    environment:
+      - TZ=America/Sao_Paulo
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+
+volumes:
+  dev1-home:
+    driver: local
+  dev1-ssh:
+    driver: local
+  dev2-home:
+    driver: local
+  dev2-ssh:
+    driver: local
