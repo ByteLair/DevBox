@@ -1,9 +1,10 @@
 # 🚀 Docker Development Workspace
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.1.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
+[![Tailscale](https://img.shields.io/badge/Tailscale-VPN%20Ready-5F4DFF.svg)](https://tailscale.com/)
 
 [Português](README.pt-BR.md) | **English**
 
@@ -27,7 +28,60 @@ A simple Docker-based isolated development workspace system, similar to GitHub C
 - SSH key pair (public/private)
 - VS Code with "Remote - SSH" extension (optional but recommended)
 
-## 🚀 Installation Methods
+## � Available Blueprints
+
+Choose the perfect environment for your project! All blueprints include SSH access, Tailscale VPN support, and are optimized for VS Code Remote development.
+
+| Blueprint | Description | Key Tools | Best For | Docker Image |
+|-----------|-------------|-----------|----------|--------------|
+| **Minimal** | Ultra-lightweight Alpine Linux | SSH, Git, Curl | Learning, minimal overhead | `lyskdot/devbox-minimal` |
+| **Python** | Data Science & ML ready | Python 3.11/3.10, Jupyter, Pandas, TensorFlow, NumPy | Data Science, ML, Web APIs | `lyskdot/devbox-python` |
+| **Node.js** | Modern JavaScript/TypeScript | Node 20/18, npm, yarn, pnpm, Bun, TypeScript | Frontend, Backend, Full-stack JS | `lyskdot/devbox-node` |
+| **Go** | Fast compiled language | Go 1.21, gopls, delve debugger | Microservices, CLI tools, Systems | `lyskdot/devbox-go` |
+| **Rust** | Systems programming | Rust stable, cargo, rustfmt, clippy | Performance-critical apps, WebAssembly | `lyskdot/devbox-rust` |
+| **PHP** | Web development classic | PHP 8.2, Composer, Laravel, Nginx | WordPress, Laravel, APIs | `lyskdot/devbox-php` |
+| **Ruby** | Elegant web framework | Ruby 3.2, Rails 7, Bundler | Rails apps, automation scripts | `lyskdot/devbox-ruby` |
+| **Java** | Enterprise & Android | Java 17 LTS, Maven, Gradle, Spring Boot | Enterprise apps, Android | `lyskdot/devbox-java` |
+| **Web** | HTML/CSS/JS static sites | Nginx, Node.js, static file serving | Landing pages, portfolios | `lyskdot/devbox-web` |
+| **Full-Stack** | Complete MEAN/MERN stack | Node.js, Python, PostgreSQL, Redis, Nginx | Complex web applications | `lyskdot/devbox-fullstack` |
+| **ML** | Deep Learning & AI | Python, CUDA support, PyTorch, TensorFlow, Jupyter | Neural networks, Computer Vision | `lyskdot/devbox-ml` |
+| **DevOps** | Infrastructure & automation | Docker, Kubernetes, Terraform, Ansible, AWS CLI | CI/CD, Infrastructure as Code | `lyskdot/devbox-devops` |
+
+### 🎯 Quick Start with Blueprints
+
+**Using ByteLair CLI** (Recommended):
+```bash
+bytelair up --template python    # Auto-detects or specify template
+bytelair connect                 # Opens VS Code
+```
+
+**Using Docker directly**:
+```bash
+# Example: Python Data Science environment
+docker run -d -p 2222:22 \
+  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -v python-workspace:/home/developer \
+  --name my-python-env \
+  lyskdot/devbox-python:latest
+
+# Connect
+ssh -p 2222 developer@localhost
+```
+
+**With Tailscale** (Access from anywhere):
+```bash
+docker run -d -p 2222:22 \
+  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -e TAILSCALE_AUTH_KEY="your-tailscale-auth-key" \
+  -v ml-workspace:/home/developer \
+  --name my-ml-env \
+  --cap-add=NET_ADMIN \
+  lyskdot/devbox-ml:latest
+```
+
+> 💡 **Tip:** All images are tagged with version numbers (e.g., `:1.1.0`, `:1.1`, `:1`) for stability. Use `:latest` for newest features.
+
+## �🚀 Installation Methods
 
 ### 🎯 Method 1: ByteLair CLI (Recommended - Most Modern)
 
@@ -418,6 +472,190 @@ docker-compose up -d --build
 ```
 
 Each workspace will have its own SSH port (2222, 2223, etc.)
+
+## 🎯 Real-World Use Cases
+
+Here are practical examples of how to use each blueprint for real projects:
+
+### 📊 Data Science Project (Python Blueprint)
+
+Perfect for: Jupyter notebooks, data analysis, machine learning models
+
+```bash
+# Start environment
+bytelair up --template python --name data-analysis
+
+# Connect and install your packages
+bytelair connect
+
+# In the container:
+pip install pandas matplotlib seaborn scikit-learn
+jupyter lab --ip 0.0.0.0 --port 8888
+```
+
+**What you get:** Python 3.11, Jupyter Lab ready, NumPy, Pandas, TensorFlow pre-installed
+
+### 🌐 Full-Stack Web App (Full-Stack Blueprint)
+
+Perfect for: MERN/MEAN stack, complete web applications
+
+```bash
+# Start environment with database
+bytelair up --template fullstack --name webapp
+
+# Databases auto-started:
+# - PostgreSQL on port 5432
+# - Redis on port 6379
+# - Nginx ready for reverse proxy
+
+# Example: Create Next.js + API + PostgreSQL
+cd ~/projects
+npx create-next-app@latest my-app
+cd my-app && npm install pg
+# Database already running: postgresql://developer:devpass@localhost/devdb
+```
+
+**What you get:** Node.js, Python, PostgreSQL, Redis, Nginx all configured
+
+### 🚀 Go Microservices (Go Blueprint)
+
+Perfect for: REST APIs, microservices, CLI tools
+
+```bash
+# Start environment
+bytelair up --template go --name api-service
+
+# Example: Build a REST API
+mkdir -p ~/projects/api && cd ~/projects/api
+go mod init github.com/username/api
+
+# Create main.go
+cat > main.go << 'EOF'
+package main
+
+import (
+    "github.com/gin-gonic/gin"
+)
+
+func main() {
+    r := gin.Default()
+    r.GET("/ping", func(c *gin.Context) {
+        c.JSON(200, gin.H{"message": "pong"})
+    })
+    r.Run(":8080")
+}
+EOF
+
+go get github.com/gin-gonic/gin
+go run main.go
+```
+
+**What you get:** Go 1.21, gopls, delve debugger, built for performance
+
+### 🦀 Systems Programming (Rust Blueprint)
+
+Perfect for: High-performance apps, WebAssembly, CLI tools
+
+```bash
+# Start environment
+bytelair up --template rust --name rust-project
+
+# Create new project
+cargo new my-cli-tool
+cd my-cli-tool
+
+# Add dependencies in Cargo.toml
+cargo add clap serde tokio
+
+# Build and run
+cargo build --release
+cargo run
+```
+
+**What you get:** Rust stable, cargo, rustfmt, clippy, rustup
+
+### 🤖 Machine Learning Training (ML Blueprint)
+
+Perfect for: Deep learning, neural networks, GPU training
+
+```bash
+# Start with GPU support (requires NVIDIA Docker)
+docker run -d --gpus all \
+  -p 2222:22 -p 8888:8888 \
+  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -v ml-models:/home/developer \
+  --name ml-training \
+  lyskdot/devbox-ml:latest
+
+# Connect and train models
+ssh -p 2222 developer@localhost
+
+# CUDA, PyTorch, TensorFlow pre-installed
+python3 -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+```
+
+**What you get:** PyTorch, TensorFlow, CUDA drivers, Jupyter for experiments
+
+### 🛠️ Infrastructure as Code (DevOps Blueprint)
+
+Perfect for: Terraform, Kubernetes, CI/CD automation
+
+```bash
+# Start environment
+bytelair up --template devops --name infrastructure
+
+# Example: Deploy Kubernetes cluster
+kubectl create deployment nginx --image=nginx
+kubectl expose deployment nginx --port=80 --type=LoadBalancer
+
+# Or manage AWS infrastructure
+aws configure  # Already has AWS CLI
+terraform init
+terraform plan
+terraform apply
+```
+
+**What you get:** Docker-in-Docker, kubectl, Terraform, Ansible, AWS CLI, Helm
+
+### 🌍 Remote Team Access (Any Blueprint + Tailscale)
+
+Perfect for: Accessing dev environment from anywhere securely
+
+```bash
+# Setup Tailscale on your workspace
+bytelair tailscale setup
+
+# Share the Tailscale IP with your team
+bytelair tailscale status
+# Output: Tailscale IP: 100.64.x.x
+
+# Team members connect via Tailscale network
+ssh developer@100.64.x.x
+# No port forwarding, no VPN setup, just works!
+```
+
+**What you get:** Secure mesh network, accessible globally, end-to-end encrypted
+
+### 🎨 Static Website Hosting (Web Blueprint)
+
+Perfect for: Landing pages, portfolios, documentation sites
+
+```bash
+# Start web server
+bytelair up --template web --name portfolio
+
+# Build your static site
+cd ~/projects
+git clone https://github.com/username/my-portfolio
+cd my-portfolio
+npm install && npm run build
+
+# Nginx already configured to serve from /var/www/html
+sudo cp -r dist/* /var/www/html/
+# Site live at http://localhost:80
+```
+
+**What you get:** Nginx optimized for static files, fast delivery
 
 ## 🔒 Security
 
