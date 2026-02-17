@@ -245,6 +245,7 @@ ssh -p 2224 developer@localhost  # Workspace 3
 ├── ACESSO-WORKSPACE.md          # Guia de acesso ao workspace
 ├── SETUP-SSH.md                 # Guia de configuração SSH
 ├── ACESSO-REDE.md               # Guia de deploy em rede/servidor
+├── MULTIPLOS-WORKSPACES.md      # Guia de múltiplos workspaces
 └── start-workspace.sh           # Script de início rápido
 ```
 
