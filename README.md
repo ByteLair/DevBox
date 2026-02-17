@@ -131,6 +131,45 @@ ssh my-workspace
 
 **Done!** Now you're coding inside the isolated container! 🎉
 
+## 🌐 Network Access (Server Deployment)
+
+Want to host DevBox on a server and let your team access it remotely? It's super easy!
+
+### For Team Members (Users)
+
+1. Install **VS Code + Remote-SSH** extension
+2. Add to `~/.ssh/config`:
+   ```
+   Host devbox
+       HostName <SERVER_IP>
+       Port 2222
+       User developer
+   ```
+3. Send your SSH public key to admin: `cat ~/.ssh/id_rsa.pub`
+4. Connect: **F1 → Remote-SSH: Connect to Host → devbox**
+
+**That's it!** No Docker needed on user machines. Just VS Code.
+
+### For Server Admin
+
+Add new users in seconds:
+
+```bash
+./add-user.sh 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... user@email.com'
+```
+
+**Complete guide:** [NETWORK-ACCESS.md](NETWORK-ACCESS.md)
+
+### Why Remote-SSH for Network Access?
+
+- ✅ **Zero setup** for users (just VS Code + extension)
+- ✅ **No Docker** needed on client machines
+- ✅ **Centralized resources** - one powerful server, many users
+- ✅ **Same experience** as local development
+- ✅ **Works anywhere** - home, office, or remote
+
+Perfect for teams, schools, or shared development environments! 🚀
+
 ## 📂 Project Structure
 
 ```
@@ -143,10 +182,12 @@ ssh my-workspace
 ├── .env                         # ⚠️ YOUR SSH KEY (create, don't commit!)
 ├── .gitignore                   # Files to ignore in git
 ├── workspace-storage/           # ⚠️ Workspace data (auto-created)
+├── add-user.sh                  # Script to add network users easily
 ├── README.md                    # This file (English)
 ├── README.pt-BR.md              # Portuguese documentation
 ├── ACCESS-WORKSPACE.md          # Workspace access guide
 ├── SSH-SETUP.md                 # SSH configuration guide
+├── NETWORK-ACCESS.md            # Network/server deployment guide
 └── start-workspace.sh           # Quick start script
 ```
 

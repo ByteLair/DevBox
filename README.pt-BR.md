@@ -131,6 +131,45 @@ ssh my-workspace
 
 **Pronto!** Agora você está codando dentro do container isolado! 🎉
 
+## 🌐 Acesso em Rede (Deploy em Servidor)
+
+Quer hospedar o DevBox em um servidor e permitir que seu time acesse remotamente? É super fácil!
+
+### Para Membros da Equipe (Usuários)
+
+1. Instalar **VS Code + extensão Remote-SSH**
+2. Adicionar ao `~/.ssh/config`:
+   ```
+   Host devbox
+       HostName <IP_DO_SERVIDOR>
+       Port 2222
+       User developer
+   ```
+3. Enviar chave SSH pública para o admin: `cat ~/.ssh/id_rsa.pub`
+4. Conectar: **F1 → Remote-SSH: Connect to Host → devbox**
+
+**Só isso!** Sem precisar de Docker na máquina do usuário. Apenas VS Code.
+
+### Para o Admin do Servidor
+
+Adicione novos usuários em segundos:
+
+```bash
+./add-user.sh 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... user@email.com'
+```
+
+**Guia completo:** [ACESSO-REDE.md](ACESSO-REDE.md)
+
+### Por que Remote-SSH para Acesso em Rede?
+
+- ✅ **Zero configuração** para usuários (só VS Code + extensão)
+- ✅ **Sem Docker** necessário nas máquinas clientes
+- ✅ **Recursos centralizados** - um servidor potente, muitos usuários
+- ✅ **Mesma experiência** do desenvolvimento local
+- ✅ **Funciona de qualquer lugar** - casa, escritório ou remoto
+
+Perfeito para times, escolas ou ambientes de desenvolvimento compartilhados! 🚀
+
 ## 📂 Estrutura do Projeto
 
 ```
@@ -143,9 +182,12 @@ ssh my-workspace
 ├── .env                         # ⚠️ SUA CHAVE SSH (criar, não commitar!)
 ├── .gitignore                   # Arquivos a ignorar no git
 ├── workspace-storage/           # ⚠️ Dados do workspace (criado automaticamente)
-├── README.md                    # Este arquivo
+├── add-user.sh                  # Script para adicionar usuários de rede facilmente
+├── README.md                    # Documentação em inglês
+├── README.pt-BR.md              # Este arquivo (Português)
 ├── ACESSO-WORKSPACE.md          # Guia de acesso ao workspace
 ├── SETUP-SSH.md                 # Guia de configuração SSH
+├── ACESSO-REDE.md               # Guia de deploy em rede/servidor
 └── start-workspace.sh           # Script de início rápido
 ```
 
