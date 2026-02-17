@@ -38,7 +38,12 @@ jobs:
           else
             # Convert comma-separated list to JSON array
             IFS=',' read -ra ADDR <<< "${{ github.event.inputs.blueprints }}"
-            BLUEPRINTS=$(printf '%s\n' "${ADDR[@]}" | jq -R . | jq -s .)
+            BLUEPRINTS="["
+            for i in "${!ADDR[@]}"; do
+              if [ $i -gt 0 ]; then BLUEPRINTS="$BLUEPRINTS,"; fi
+              BLUEPRINTS="$BLUEPRINTS\"${ADDR[$i]}\""
+            done
+            BLUEPRINTS="$BLUEPRINTS]"
             echo "blueprints=$BLUEPRINTS" >> $GITHUB_OUTPUT
           fi
           
