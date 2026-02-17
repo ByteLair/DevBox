@@ -4,6 +4,47 @@ All notable changes to ByteLair DevBox will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.2.0] - 2026-02-17 (In Progress)
+
+### 🔐 Security Enhancements
+
+**SSH Protection & Monitoring:**
+- **Audit Logging**: All SSH access attempts logged to `/var/log/devbox/audit.log`
+  - Tracks user, source IP, and commands executed
+  - Container lifecycle events logged
+  - Essential for security audits and compliance
+
+- **SSH Rate Limiting**: iptables-based brute force protection
+  - Limits connections to 4 per minute per IP address
+  - Automatically logs blocked attempts
+  - Requires `--cap-add=NET_ADMIN` (gracefully degrades if not available)
+  - Non-breaking: works with or without NET_ADMIN capability
+
+- **GitHub Actions Security**: Protection against fork PR attacks
+  - Secrets only exposed to trusted sources (same repository)
+  - Prevents malicious forks from accessing Docker Hub credentials
+  - Blocks `pull_request_target` and external forks
+
+### 🎯 User Experience
+
+**Interactive Onboarding:**
+- **`bytelair init`** - New setup wizard for first-time users
+  - Auto-detects existing SSH keys or creates new ed25519 keys
+  - Detects project type from current directory
+  - Recommends appropriate blueprint based on project
+  - Optional Tailscale configuration
+  - Saves preferences to `~/.bytelair/config.json`
+
+**Improved Error Messages:**
+- Helpful error messages with suggested next actions
+- Clear guidance when workspace not found
+- Recommendations for common issues
+
+### 📖 Documentation
+- Added security features documentation
+- Audit logging usage guide
+- Rate limiting configuration notes
+
 ## [1.1.1] - 2026-02-17
 
 ### 🔐 Security Improvements
