@@ -47,12 +47,12 @@ curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/quick-run.sh |
 
 Ou manualmente:
 ```bash
-docker pull bytelair/devbox:latest
+docker pull lyskdot/devbox:latest
 docker run -d -p 2222:22 \
   -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
   -v devbox-data:/home/developer \
   --name devbox \
-  bytelair/devbox:latest
+  lyskdot/devbox:latest
 ```
 
 ### 📦 Método 3: Instalação Manual (Controle Total)

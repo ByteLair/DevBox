@@ -49,7 +49,7 @@
 
 O workflow já está configurado para:
 ```
-DOCKER_IMAGE: bytelair/devbox
+DOCKER_IMAGE: lyskdot/devbox
 ```
 
 Se seu username for diferente, edite `.github/workflows/docker-build.yml`
@@ -66,7 +66,7 @@ git push origin main
 
 1. Vá em: https://github.com/ByteLair/DevBox/actions
 2. Veja o workflow "Docker Build & Publish" rodando
-3. Após finalizar, confira em: https://hub.docker.com/r/bytelair/devbox
+3. Após finalizar, confira em: https://hub.docker.com/r/lyskdot/devbox
 
 ---
 
@@ -119,8 +119,8 @@ ssh -p 2222 developer@localhost
 
 Pull directly from Docker Hub:
 \`\`\`bash
-docker pull bytelair/devbox:1.0.0
-docker pull bytelair/devbox:latest
+docker pull lyskdot/devbox:1.0.0
+docker pull lyskdot/devbox:latest
 \`\`\`
 
 ### 📚 Documentation
@@ -161,8 +161,8 @@ gh release create v1.0.0 \
 Após publicar no Docker Hub, adicione estes badges aos READMEs:
 
 ```markdown
-[![Docker Pulls](https://img.shields.io/docker/pulls/bytelair/devbox.svg)](https://hub.docker.com/r/bytelair/devbox)
-[![Docker Image Size](https://img.shields.io/docker/image-size/bytelair/devbox/latest.svg)](https://hub.docker.com/r/bytelair/devbox)
+[![Docker Pulls](https://img.shields.io/docker/pulls/lyskdot/devbox.svg)](https://hub.docker.com/r/lyskdot/devbox)
+[![Docker Image Size](https://img.shields.io/docker/image-size/lyskdot/devbox/latest.svg)](https://hub.docker.com/r/lyskdot/devbox)
 [![Build Status](https://github.com/ByteLair/DevBox/workflows/Docker%20Build%20%26%20Publish/badge.svg)](https://github.com/ByteLair/DevBox/actions)
 ```
 

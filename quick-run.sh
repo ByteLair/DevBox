@@ -54,7 +54,7 @@ fi
 
 # Puxar imagem do Docker Hub
 echo "📥 Baixando imagem do Docker Hub..."
-docker pull bytelair/devbox:latest
+docker pull lyskdot/devbox:latest
 
 # Criar volume para dados
 docker volume create devbox-quick-data
@@ -69,7 +69,7 @@ docker run -d \
     --cpus="4" \
     --memory="8g" \
     --restart unless-stopped \
-    bytelair/devbox:latest
+    lyskdot/devbox:latest
 
 # Aguardar
 echo "⏳ Aguardando inicialização..."
