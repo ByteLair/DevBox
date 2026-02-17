@@ -242,10 +242,17 @@ ssh -p 2224 developer@localhost  # Workspace 3
 ├── add-user.sh                  # Script para adicionar usuários de rede facilmente
 ├── README.md                    # Documentação em inglês
 ├── README.pt-BR.md              # Este arquivo (Português)
-├── ACESSO-WORKSPACE.md          # Guia de acesso ao workspace
-├── SETUP-SSH.md                 # Guia de configuração SSH
-├── ACESSO-REDE.md               # Guia de deploy em rede/servidor
-├── MULTIPLOS-WORKSPACES.md      # Guia de múltiplos workspaces
+├── docs/
+│   ├── pt-BR/                   # 📚 Documentação em Português
+│   │   ├── ACESSO-WORKSPACE.md
+│   │   ├── ACESSO-REDE.md
+│   │   ├── MULTIPLOS-WORKSPACES.md
+│   │   └── SETUP-SSH.md
+│   └── en/                      # 📚 Documentation in English
+│       ├── ACCESS-WORKSPACE.md
+│       ├── NETWORK-ACCESS.md
+│       ├── MULTIPLE-WORKSPACES.md
+│       └── SSH-SETUP.md
 └── start-workspace.sh           # Script de início rápido
 ```
 
@@ -448,10 +455,22 @@ docker-compose -f docker-compose-env.yml restart
 
 ## 📚 Documentação Adicional
 
-- [ACESSO-WORKSPACE.md](ACESSO-WORKSPACE.md) - Guia detalhado de acesso e uso (Português)
-- [ACCESS-WORKSPACE.md](ACCESS-WORKSPACE.md) - Detailed access guide (English)
-- [SETUP-SSH.md](SETUP-SSH.md) - Configuração avançada de SSH (Português)
-- [SSH-SETUP.md](SSH-SETUP.md) - SSH configuration guide (English)
+### 🇧🇷 Português
+
+- [ACESSO-WORKSPACE.md](docs/pt-BR/ACESSO-WORKSPACE.md) - Guia detalhado de acesso e uso
+- [ACESSO-REDE.md](docs/pt-BR/ACESSO-REDE.md) - Deploy em rede/servidor
+- [MULTIPLOS-WORKSPACES.md](docs/pt-BR/MULTIPLOS-WORKSPACES.md) - Configuração de múltiplos workspaces
+- [SETUP-SSH.md](docs/pt-BR/SETUP-SSH.md) - Configuração avançada de SSH
+
+### 🇺🇸 English
+
+- [ACCESS-WORKSPACE.md](docs/en/ACCESS-WORKSPACE.md) - Detailed access guide
+- [NETWORK-ACCESS.md](docs/en/NETWORK-ACCESS.md) - Network/server deployment guide
+- [MULTIPLE-WORKSPACES.md](docs/en/MULTIPLE-WORKSPACES.md) - Multiple workspaces configuration
+- [SSH-SETUP.md](docs/en/SSH-SETUP.md) - Advanced SSH configuration
+
+### ⚙️ Arquivos de Configuração
+
 - [env.example](env.example) - Exemplo de arquivo de configuração
 
 ## 🤝 Contribuindo

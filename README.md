@@ -158,7 +158,7 @@ Add new users in seconds:
 ./add-user.sh 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... user@email.com'
 ```
 
-**Complete guide:** [NETWORK-ACCESS.md](NETWORK-ACCESS.md)
+**Complete guide:** [NETWORK-ACCESS.md](docs/en/NETWORK-ACCESS.md)
 
 ### Why Remote-SSH for Network Access?
 
@@ -242,10 +242,17 @@ ssh -p 2224 developer@localhost  # Workspace 3
 ├── add-user.sh                  # Script to add network users easily
 ├── README.md                    # This file (English)
 ├── README.pt-BR.md              # Portuguese documentation
-├── ACCESS-WORKSPACE.md          # Workspace access guide
-├── SSH-SETUP.md                 # SSH configuration guide
-├── NETWORK-ACCESS.md            # Network/server deployment guide
-├── MULTIPLE-WORKSPACES.md       # Multiple workspaces guide
+├── docs/
+│   ├── en/                      # 📚 Documentation in English
+│   │   ├── ACCESS-WORKSPACE.md
+│   │   ├── NETWORK-ACCESS.md
+│   │   ├── MULTIPLE-WORKSPACES.md
+│   │   └── SSH-SETUP.md
+│   └── pt-BR/                   # 📚 Documentação em Português
+│       ├── ACESSO-WORKSPACE.md
+│       ├── ACESSO-REDE.md
+│       ├── MULTIPLOS-WORKSPACES.md
+│       └── SETUP-SSH.md
 └── start-workspace.sh           # Quick start script
 ```
 
@@ -448,8 +455,22 @@ docker-compose -f docker-compose-env.yml restart
 
 ## 📚 Additional Documentation
 
-- [ACCESS-WORKSPACE.md](ACCESS-WORKSPACE.md) - Detailed access and usage guide
-- [SSH-SETUP.md](SSH-SETUP.md) - Advanced SSH configuration
+### 🇺🇸 English
+
+- [ACCESS-WORKSPACE.md](docs/en/ACCESS-WORKSPACE.md) - Detailed access and usage guide
+- [NETWORK-ACCESS.md](docs/en/NETWORK-ACCESS.md) - Network/server deployment guide
+- [MULTIPLE-WORKSPACES.md](docs/en/MULTIPLE-WORKSPACES.md) - Multiple workspaces configuration
+- [SSH-SETUP.md](docs/en/SSH-SETUP.md) - Advanced SSH configuration
+
+### 🇧🇷 Português
+
+- [ACESSO-WORKSPACE.md](docs/pt-BR/ACESSO-WORKSPACE.md) - Guia detalhado de acesso e uso
+- [ACESSO-REDE.md](docs/pt-BR/ACESSO-REDE.md) - Deploy em rede/servidor
+- [MULTIPLOS-WORKSPACES.md](docs/pt-BR/MULTIPLOS-WORKSPACES.md) - Configuração de múltiplos workspaces
+- [SETUP-SSH.md](docs/pt-BR/SETUP-SSH.md) - Configuração avançada de SSH
+
+### ⚙️ Configuration Files
+
 - [env.example](env.example) - Configuration file example
 
 ## 🤝 Contributing
