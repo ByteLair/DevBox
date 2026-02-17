@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  DOCKER_IMAGE: bytelair/devbox
+  DOCKER_IMAGE: lyskdot/devbox
   
 jobs:
   build:
