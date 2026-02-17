@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ github.event.inputs.use_self_hosted == 'true' && fromJSON('["self-hosted", "bytelair"]') || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
-      max-parallel: ${{ github.event.inputs.use_self_hosted == 'true' && 6 || 12 }}
+      max-parallel: ${{ github.event.inputs.use_self_hosted == 'true' && 3 || 12 }}
       matrix:
         blueprint: ${{ fromJson(needs.build-matrix.outputs.blueprints) }}
     
