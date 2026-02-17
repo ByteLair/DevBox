@@ -15,15 +15,13 @@ RUN apk add --no-cache \
     wget \
     sudo \
     shadow \
-    # Tailscale
+    # Tailscale dependencies
     ca-certificates \
     iptables \
     ip6tables
 
-# Install Tailscale
-RUN curl -fsSL https://pkgs.tailscale.com/stable/alpine/tailscale_1.58.2_amd64.apk -o /tmp/tailscale.apk && \
-    apk add --allow-untrusted /tmp/tailscale.apk && \
-    rm /tmp/tailscale.apk
+# Install Tailscale (Alpine Edge repository)
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing tailscale
 
 # Create developer user
 RUN addgroup -g 1000 developer && \
