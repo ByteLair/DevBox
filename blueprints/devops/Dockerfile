@@ -25,7 +25,6 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     # Utilities
     jq \
-    yq \
     unzip \
     gnupg \
     software-properties-common \
@@ -33,6 +32,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install Tailscale
 RUN curl -fsSL https://tailscale.com/install.sh | sh
+
+# Install yq (YAML processor)
+RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    chmod +x /usr/local/bin/yq
 
 # Install Terraform
 RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
