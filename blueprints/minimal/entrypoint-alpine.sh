@@ -14,8 +14,11 @@ fi
 
 # Configurar Tailscale se auth key fornecida
 if [ -n "$TAILSCALE_AUTH_KEY" ]; then
-    echo "🔗 Configurando Tailscale..."
-    sudo mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+    if ! command -v tailscaled >/dev/null 2>&1; then
+        echo "⚠️  Tailscale not installed, skipping..."
+    else
+        echo "🔗 Configurando Tailscale..."
+        sudo mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
     
     # Inicia tailscaled em background
     sudo tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
@@ -24,8 +27,9 @@ if [ -n "$TAILSCALE_AUTH_KEY" ]; then
     # Autenticar na rede Tailscale
     sudo tailscale up --authkey="$TAILSCALE_AUTH_KEY" --hostname="devbox-minimal-$(hostname)"
     
-    TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "pending")
-    echo "✅ Tailscale configurado! IP: $TAILSCALE_IP"
+        TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "pending")
+        echo "✅ Tailscale configurado! IP: $TAILSCALE_IP"
+    fi
 fi
 
 # Inicia o serviço SSH (Alpine usa /usr/sbin/sshd diretamente)

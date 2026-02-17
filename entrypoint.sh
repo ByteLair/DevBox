@@ -32,11 +32,16 @@ fi
 # Tailscale Configuration (Optional)
 # ============================================
 if [ -n "$TAILSCALE_AUTH_KEY" ]; then
-    echo "🔐 Tailscale authentication key detected"
-    echo "🌐 Connecting to Tailscale network..."
-    
-    # Start tailscaled daemon in background
-    tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
+    # Check if Tailscale is installed
+    if ! command -v tailscaled >/dev/null 2>&1; then
+        echo "⚠️  Tailscale not installed in this blueprint, skipping..."
+        echo "   Use a blueprint with Tailscale support or install it manually"
+    else
+        echo "🔐 Tailscale authentication key detected"
+        echo "🌐 Connecting to Tailscale network..."
+        
+        # Start tailscaled daemon in background
+        tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
     
     # Wait for tailscaled to be ready
     sleep 2
@@ -48,19 +53,20 @@ if [ -n "$TAILSCALE_AUTH_KEY" ]; then
         tailscale up --authkey="$TAILSCALE_AUTH_KEY" --accept-routes
     fi
     
-    # Get Tailscale IP
-    TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "pending")
-    
-    if [ "$TAILSCALE_IP" != "pending" ]; then
-        echo "✅ Tailscale connected!"
-        echo "📡 Tailscale IP: $TAILSCALE_IP"
-        echo "🔗 SSH via Tailscale: ssh -p 22 developer@$TAILSCALE_IP"
+        # Get Tailscale IP
+        TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "pending")
         
-        # Save Tailscale IP for easy access
-        echo "$TAILSCALE_IP" > /home/developer/.tailscale-ip
-        chown developer:developer /home/developer/.tailscale-ip
-    else
-        echo "⚠️  Tailscale authentication in progress..."
+        if [ "$TAILSCALE_IP" != "pending" ]; then
+            echo "✅ Tailscale connected!"
+            echo "📡 Tailscale IP: $TAILSCALE_IP"
+            echo "🔗 SSH via Tailscale: ssh -p 22 developer@$TAILSCALE_IP"
+            
+            # Save Tailscale IP for easy access
+            echo "$TAILSCALE_IP" > /home/developer/.tailscale-ip
+            chown developer:developer /home/developer/.tailscale-ip
+        else
+            echo "⚠️  Tailscale authentication in progress..."
+        fi
     fi
 else
     echo "ℹ️  Tailscale not configured (optional)"
