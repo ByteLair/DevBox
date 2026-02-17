@@ -29,15 +29,38 @@ A simple Docker-based isolated development workspace system, similar to GitHub C
 
 ## 🚀 Installation Methods
 
-### ⚡ Method 1: One-Line Auto Install (Easiest)
+### 🎯 Method 1: ByteLair CLI (Recommended - Most Modern)
 
-Everything automated - downloads, configures SSH, and starts:
+The friendliest way to use DevBox! CLI with project auto-detection and VS Code integration:
+
+```bash
+# One-liner installation
+curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/cli/install.sh | bash
+
+# Simple to use
+bytelair up              # Auto-detects project and starts workspace
+bytelair connect         # Opens VS Code automatically
+bytelair list            # Lists workspaces
+```
+
+**Benefits:**
+- ✨ Auto-detects project type (Python, Node.js, etc.)
+- 🚀 One command for everything: `bytelair up`
+- 💻 Automatic VS Code Remote SSH integration
+- 📊 Beautiful interface with status, logs, and management
+- 🎨 Ready-made templates for different stacks
+
+[See full CLI documentation →](cli/README.md)
+
+### ⚡ Method 2: One-Line Auto Install
+
+Everything automated - downloads, configures SSH, and starts (traditional mode):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/install.sh | bash
 ```
 
-### 🐳 Method 2: Docker Hub Quick Run (No Clone Needed)
+### 🐳 Method 3: Docker Hub Quick Run (No Clone Needed)
 
 Pull pre-built image and run:
 
@@ -55,7 +78,7 @@ docker run -d -p 2222:22 \
   lyskdot/devbox:latest
 ```
 
-### 📦 Method 3: Manual Install (Full Control)
+### 📦 Method 4: Manual Install (Full Control)
 
 #### 1. Clone the repository
 

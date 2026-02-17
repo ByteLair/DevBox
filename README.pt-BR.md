@@ -29,15 +29,38 @@ Sistema simples de workspaces isolados para desenvolvimento, similar ao GitHub C
 
 ## 🚀 Métodos de Instalação
 
-### ⚡ Método 1: Instalação Automática com Um Comando (Mais Fácil)
+### 🎯 Método 1: ByteLair CLI (Recomendado - Mais Moderno)
 
-Tudo automatizado - baixa, configura SSH e inicia:
+A forma mais amigável de usar o DevBox! CLI com auto-detecção de projetos e integração VS Code:
+
+```bash
+# Instalação one-liner
+curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/cli/install.sh | bash
+
+# Usar é simples
+bytelair up              # Auto-detecta projeto e inicia workspace
+bytelair connect         # Abre VS Code automaticamente
+bytelair list            # Lista workspaces
+```
+
+**Vantagens:**
+- ✨ Auto-detecta tipo de projeto (Python, Node.js, etc.)
+- 🚀 Um comando para tudo: `bytelair up`
+- 💻 Integração automática com VS Code Remote SSH
+- 📊 Interface bonita com status, logs e gerenciamento
+- 🎨 Templates prontos para diferentes stacks
+
+[Ver documentação completa da CLI →](cli/README.md)
+
+### ⚡ Método 2: Instalação Automática com Um Comando
+
+Tudo automatizado - baixa, configura SSH e inicia (modo tradicional):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/install.sh | bash
 ```
 
-### 🐳 Método 2: Execução Rápida via Docker Hub (Sem Clone)
+### 🐳 Método 3: Execução Rápida via Docker Hub (Sem Clone)
 
 Baixa imagem pronta e executa:
 
@@ -55,7 +78,7 @@ docker run -d -p 2222:22 \
   lyskdot/devbox:latest
 ```
 
-### 📦 Método 3: Instalação Manual (Controle Total)
+### 📦 Método 4: Instalação Manual (Controle Total)
 
 #### 1. Clone o repositório
 
