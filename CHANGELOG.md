@@ -4,46 +4,198 @@ All notable changes to ByteLair DevBox will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-## [1.2.0] - 2026-02-17 (In Progress)
+## [1.2.0] - 2026-02-17
 
 ### 🔐 Security Enhancements
 
 **SSH Protection & Monitoring:**
 - **Audit Logging**: All SSH access attempts logged to `/var/log/devbox/audit.log`
-  - Tracks user, source IP, and commands executed
-  - Container lifecycle events logged
-  - Essential for security audits and compliance
+  - Tracks user, source IP, and commands executed via custom audit wrapper
+  - Container lifecycle events logged (startup, shutdown, errors)
+  - Essential for security audits, compliance, and debugging
+  - Wrapper script: `/usr/local/bin/ssh-audit-wrapper.sh`
 
 - **SSH Rate Limiting**: iptables-based brute force protection
   - Limits connections to 4 per minute per IP address
-  - Automatically logs blocked attempts
+  - Automatically logs blocked attempts to audit log
   - Requires `--cap-add=NET_ADMIN` (gracefully degrades if not available)
   - Non-breaking: works with or without NET_ADMIN capability
+  - Uses dedicated SSH_RATELIMIT chain for clean iptables rules
 
 - **GitHub Actions Security**: Protection against fork PR attacks
   - Secrets only exposed to trusted sources (same repository)
   - Prevents malicious forks from accessing Docker Hub credentials
   - Blocks `pull_request_target` and external forks
+  - Applied to build-blueprints.yml workflow
 
 ### 🎯 User Experience
 
 **Interactive Onboarding:**
-- **`bytelair init`** - New setup wizard for first-time users
-  - Auto-detects existing SSH keys or creates new ed25519 keys
-  - Detects project type from current directory
-  - Recommends appropriate blueprint based on project
+- **`bytelair init`** - New setup wizard for first-time users (390 lines)
+  - Auto-detects existing SSH keys (ed25519, RSA, ECDSA)
+  - Creates new ed25519 keys if none found
+  - Detects project type from current directory (`package.json`, `requirements.txt`, etc.)
+  - Recommends appropriate blueprint based on project detection
   - Optional Tailscale configuration
   - Saves preferences to `~/.bytelair/config.json`
+  - Rich table display of all 12 available blueprints
 
 **Improved Error Messages:**
 - Helpful error messages with suggested next actions
-- Clear guidance when workspace not found
-- Recommendations for common issues
+- Clear guidance when workspace not found (shows `list`, `up`, `init`)
+- Recommendations for common issues in all commands
+- Better "workspace not found" messages with next steps
+
+**Progress Bars:**
+- Rich progress indicators for Docker image pulls
+- Visual feedback during long operations (download, extract, verify)
+- Detailed pull status messages showing layers and progress
+- Integrated into `bytelair up` command
+
+### 📸 Workspace Management
+
+**Snapshot System** (`cli/snapshots.py` - 295 lines):
+- **`bytelair snapshot-create`** - Create workspace snapshots
+  - Uses Docker commit for efficient state preservation
+  - Optional snapshot name and description message
+  - Metadata tracking in `~/.bytelair/snapshots/metadata.json`
+  - Shows snapshot size and image ID
+
+- **`bytelair snapshot-list`** - View all snapshots
+  - Rich table display with name, workspace, created date, size, status
+  - Filter by workspace with `--workspace` flag
+  - Shows total snapshots count and combined size
+  - Indicates if snapshot image still exists
+
+- **`bytelair snapshot-restore`** - Restore from snapshot
+  - Creates new workspace from snapshot state
+  - Custom workspace name support
+  - Configurable SSH port
+  - Shows connection instructions after restore
+
+- **`bytelair snapshot-delete`** - Remove snapshots
+  - Confirmation prompt (bypass with `--force`)
+  - Removes both Docker image and metadata
+  - Graceful handling of missing images
+
+### ⚙️ Settings Synchronization
+
+**Settings Sync** (`cli/sync.py` - 279 lines):
+- **`bytelair sync-settings`** - Sync VS Code settings
+  - Bidirectional: push (local→workspace) or pull (workspace→local)
+  - Syncs `settings.json` and `keybindings.json`
+  - Target: `.vscode-server/data/Machine/` directory
+  - Auto-detection of VS Code directory (Linux/macOS)
+
+- **`bytelair sync-dotfiles`** - Sync configuration files
+  - Supported: `.bashrc`, `.gitconfig`, `.zshrc`, `.vimrc`, `.tmux.conf`
+  - Custom file list with `--files` parameter
+  - Progress bars showing sync status per file
+  - Automatic backup of local files when pulling (.backup extension)
+
+- **`bytelair sync-extensions`** - Export extension list
+  - Saves installed VS Code extensions to file
+  - Location: `~/.bytelair/{workspace}-extensions.txt`
+  - Shows installation command for workspace
+  - Requires VS Code CLI (`code` command)
+
+### 🔌 Port Management
+
+**Port Commands:**
+- **`bytelair port-list`** - Display all exposed ports
+  - Rich table with container port, protocol, host port, host IP
+  - Auto-detection of common services (SSH, HTTP)
+  - Shows connection strings for recognized ports (ssh -p, http://localhost)
+  - Clear formatting distinguishing SSH (22), web (3000, 8080), etc.
+
+- **`bytelair port-add`** - Guide for dynamic port forwarding
+  - Explains Docker limitations (can't add ports to running containers)
+  - Shows SSH port forwarding alternative
+  - Lists current port mappings for context
+  - Educational command with practical examples
+
+### 🏥 Health Monitoring
+
+**Container Health Checks:**
+- Added `HEALTHCHECK` directive to **all 13 Dockerfiles** (main + 12 blueprints)
+  - Monitors SSH daemon responsiveness on port 22
+  - Interval: 30s, timeout: 3s, start-period: 5s, retries: 3
+  - Uses netcat (`nc -z localhost 22`) for lightweight check
+  - Visible in `docker ps` output
+  - Enables automatic restart policies based on health
+
+### 🌍 Environment Configuration
+
+**Timezone & Locale:**
+- Added to **all Dockerfiles** (main + 12 blueprints)
+  - `ENV TZ=UTC` - Consistent timezone across all containers
+  - `ENV LANG=en_US.UTF-8` - Default locale
+  - `ENV LC_ALL=en_US.UTF-8` - Fallback locale
+  - Prevents locale-related issues in applications
+  - Ensures consistent timestamp behavior
 
 ### 📖 Documentation
-- Added security features documentation
-- Audit logging usage guide
-- Rate limiting configuration notes
+
+**README Enhancements:**
+- Updated version badge to 1.2.0
+- Added v1.2.0 features section with examples
+- Interactive onboarding documentation
+- Snapshot system usage examples
+- Settings sync commands and workflows
+- Port management guide
+- Security features documentation (rate limiting, audit logging)
+- Health monitoring explanation
+
+**CHANGELOG Improvements:**
+- Comprehensive v1.2.0 section (this file)
+- Detailed feature descriptions with file references
+- Breaking changes (none - all features backward compatible)
+- Technical details for each new feature
+
+### 🛠️ Technical Improvements
+
+**Code Quality:**
+- All Python code passes `py_compile` syntax checks
+- Rich library integration for beautiful CLI output
+- Progress tracking with spinners and bars
+- Consistent error handling across all commands
+- Type hints in new modules (`Optional`, `List`, `Dict`)
+
+**Architecture:**
+- Modular design: `snapshots.py`, `sync.py` as separate concerns
+- Reusable components (`SettingsSync`, `SnapshotManager` classes)
+- Docker Python SDK for container operations
+- In-memory tar operations for efficient file transfer
+
+### 📦 Commits
+
+- `b8bc0a6` - feat: add health checks to all 12 blueprints (v1.2.0)
+- `793c594` - feat: add v1.2.0 UX improvements and snapshot system
+- `ed0ca64` - feat: add settings sync and port management (v1.2.0)
+- `c9938f3` - security: add SSH rate limiting, audit logging, onboarding wizard
+- `a791c50` - docs: add v1.2.0 section to CHANGELOG
+
+### ⚠️ Breaking Changes
+
+**None** - All features are additive and backward compatible:
+- Existing workspaces continue to work without changes
+- New security features gracefully degrade if capabilities not available
+- New CLI commands don't interfere with existing workflows
+- Environment variables (TZ, LANG, LC_ALL) are non-breaking defaults
+
+### 🔄 Migration Notes
+
+**For existing users:**
+1. Pull latest images: `docker pull lyskdot/devbox-*:latest`
+2. Recreate containers to get health checks and security features
+3. Optional: Enable rate limiting with `--cap-add=NET_ADMIN`
+4. Optional: Try new snapshot feature: `bytelair snapshot-create <workspace>`
+
+**For new users:**
+1. Install/update CLI: `curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/cli/install.sh | bash`
+2. Run interactive setup: `bytelair init`
+3. Create workspace: `bytelair up`
+4. Connect: `bytelair connect`
 
 ## [1.1.1] - 2026-02-17
 

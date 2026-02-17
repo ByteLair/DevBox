@@ -1,6 +1,6 @@
 # 🚀 Docker Development Workspace
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.1.0)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.2.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
@@ -21,6 +21,14 @@ A simple Docker-based isolated development workspace system, similar to GitHub C
 - ✅ Resource limits per container (CPU/RAM)
 - ✅ SSH key authentication (passwordless)
 - ✅ Configurable storage (50GB default)
+- 🆕 **v1.2.0** SSH rate limiting & audit logging (protect against brute force)
+- 🆕 **v1.2.0** Interactive onboarding wizard (`bytelair init`)
+- 🆕 **v1.2.0** Workspace snapshots (backup & restore states)
+- 🆕 **v1.2.0** Settings sync (VS Code config, dotfiles, extensions)
+- 🆕 **v1.2.0** Health monitoring for all containers
+- 🆕 **v1.2.0** Enhanced security & GitHub Actions fork protection
+- 🆕 **v1.2.0** Progress bars for long operations
+- 🆕 **v1.2.0** Port management commands
 
 ## 🛠️ Prerequisites
 
@@ -220,6 +228,107 @@ ssh -p 2222 developer@localhost
 Or using the alias (if configured):
 ```bash
 ssh my-workspace
+```
+
+## 🆕 v1.2.0 New Features
+
+### Interactive Onboarding
+
+First-time setup made easy with a guided wizard:
+
+```bash
+bytelair init
+```
+
+The wizard will:
+- ✅ Detect or generate SSH keys (ed25519 recommended)
+- ✅ Auto-detect your project type (Python, Node.js, Go, etc.)
+- ✅ Recommend the best blueprint
+- ✅ Optional Tailscale setup for remote access
+- ✅ Save configuration for future use
+
+### Workspace Snapshots
+
+Backup and restore workspace states:
+
+```bash
+# Create a snapshot
+bytelair snapshot-create my-workspace --name "before-refactor" --message "Clean state"
+
+# List all snapshots
+bytelair snapshot-list
+
+# Filter by workspace
+bytelair snapshot-list --workspace my-workspace
+
+# Restore from snapshot
+bytelair snapshot-restore before-refactor --workspace my-workspace-restored
+
+# Delete snapshot
+bytelair snapshot-delete old-snapshot
+```
+
+### Settings Synchronization
+
+Keep your VS Code settings and dotfiles in sync:
+
+```bash
+# Sync VS Code settings to workspace
+bytelair sync-settings my-workspace --direction push
+
+# Pull settings from workspace to local
+bytelair sync-settings my-workspace --direction pull
+
+# Sync dotfiles (.bashrc, .gitconfig, .vimrc, etc)
+bytelair sync-dotfiles my-workspace --direction push
+
+# Sync specific files only
+bytelair sync-dotfiles my-workspace --files ".bashrc,.gitconfig"
+
+# Export VS Code extensions list
+bytelair sync-extensions my-workspace
+```
+
+### Port Management
+
+View and manage exposed ports:
+
+```bash
+# List all ports for a workspace
+bytelair port-list my-workspace
+
+# Get help with dynamic port forwarding
+bytelair port-add my-workspace 3000 3000
+```
+
+### Security Features
+
+**SSH Rate Limiting** (requires `--cap-add=NET_ADMIN`):
+- Automatic protection against brute force attacks
+- Limit: 4 connection attempts per minute per IP
+- Uses iptables for efficient filtering
+
+**Audit Logging**:
+- All SSH logins tracked in `/var/log/devbox/audit.log`
+- Records: timestamp, user, IP, commands executed
+- Useful for security monitoring and debugging
+
+```bash
+# View audit logs
+docker exec bytelair-my-workspace cat /var/log/devbox/audit.log
+```
+
+### Health Monitoring
+
+All containers now include health checks:
+- Monitors SSH daemon responsiveness
+- 30-second intervals, 3-second timeout
+- View status: `docker ps` shows health state
+- Automatic restarts on unhealthy containers (if configured)
+
+```bash
+# View health status
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 ```
 
 ## 💻 Connecting via VS Code
