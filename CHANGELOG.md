@@ -4,6 +4,69 @@ All notable changes to ByteLair DevBox will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.1] - 2026-02-17
+
+### 🔐 Security Improvements
+
+**Critical security enhancements based on best practices review:**
+
+- **SSH Key Protection**: Removed `ARG SSH_PUBLIC_KEY` and build-time key configuration
+  - SSH keys are now configured **only at runtime** via environment variable
+  - Prevents keys from being embedded in Docker image layers
+  - Eliminates risk of key exposure when publishing images to Docker Hub
+
+- **Process Management**: sshd now runs as PID 1 with proper signal handling
+  - Changed from `tail -f /dev/null` to `exec /usr/sbin/sshd -D -e`
+  - Ensures clean container shutdowns and proper log output
+  - Follows Docker best practices for service containers
+
+- **Resource Limits**: Added compose standalone compatibility
+  - Added `mem_limit` and `cpus` directives alongside `deploy.resources`
+  - Works correctly with both `docker-compose up` and Swarm mode
+  - Eliminates need for `--compatibility` flag
+
+- **Documentation Enhancements**:
+  - Added recommendation for modern **ed25519** SSH keys over RSA
+  - Clear warnings about `NOPASSWD` sudo and its security implications
+  - Strong recommendation to use Tailscale VPN or firewall for network security
+  - Added security best practices section with actionable guidance
+
+### 🐛 Bug Fixes
+
+- **devops blueprint**: Fixed `yq` installation (not available in apt)
+  - Now installs from GitHub releases as binary
+- Fixed SSH connection message to show correct port syntax
+- Corrected entrypoint service startup messages
+## [1.0.1] - 2026-02-17
+
+### 🔒 Security
+
+#### Critical Security Improvements
+- **Removed SSH keys from build process** - SSH public keys are now configured only at runtime via `SSH_PUBLIC_KEY` environment variable, preventing keys from being embedded in Docker image history layers
+- **sshd as PID 1** - Changed from `tail -f /dev/null` to `exec /usr/sbin/sshd -D -e` for proper signal handling, cleaner logs, and correct container shutdown behavior
+- **Enhanced security documentation** - Added comprehensive security best practices section in README
+
+#### Recommended Practices Added
+- **ed25519 SSH keys**: Documentation now recommends modern ed25519 keys over RSA
+- **Network security warnings**: Clear warnings about not exposing containers directly to internet
+- **Tailscale VPN recommendation**: Emphasized secure remote access via Tailscale
+- **Sudo access clarification**: Documented passwordless sudo implications and how to disable if needed
+
+### 🐛 Bug Fixes
+- Fixed SSH connection message showing placeholder `<port>` instead of actual port number
+- Fixed `yq` installation in DevOps blueprint (now installed from GitHub releases instead of apt)
+- Added `--ignore-installed` flag to pip in fullstack blueprint to avoid conflicts with system packages
+
+### 🚀 Improvements
+- **Docker Compose compatibility** - Added `mem_limit` and `cpus` alongside `deploy.resources` for standalone mode compatibility
+- **Python 3.12 support** - Added `--break-system-packages` flag for pip in Ubuntu 24.04 blueprints
+- **PostgreSQL 16** - Upgraded fullstack and ruby blueprints to use PostgreSQL 16 on Ubuntu 24.04
+
+### 📖 Documentation
+- Improved security section with detailed threat model
+- Added recommendations for firewall configuration
+- Documented container isolation considerations
+- Added backup and data persistence security notes
 
 ## [1.1.0] - 2026-02-17
 
