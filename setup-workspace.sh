@@ -40,16 +40,32 @@ docker exec "$WORKSPACE_NAME" bash -c "
 # Pega a porta SSH do container
 PORT=$(docker port "$WORKSPACE_NAME" 22 | cut -d: -f2)
 
+# Descobre o IP de rede local (exclui loopback)
+SERVER_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}' || hostname -I | awk '{print $1}' || echo "SEU_IP_AQUI")
+
 echo "✅ Configuração concluída!"
+echo ""
+echo "🌐 IP do Servidor: $SERVER_IP"
+echo "🔌 Porta SSH: $PORT"
 echo ""
 echo "📝 Para conectar no VS Code:"
 echo "1. Instale a extensão 'Remote - SSH' no VS Code"
 echo "2. Adicione no seu ~/.ssh/config:"
 echo ""
+echo "# Acesso local (mesma máquina)"
 echo "Host $WORKSPACE_NAME"
 echo "    HostName localhost"
 echo "    Port $PORT"
 echo "    User developer"
 echo "    IdentityFile ~/.ssh/id_rsa"
 echo ""
+echo "# Acesso remoto (de outra máquina na rede)"
+echo "Host $WORKSPACE_NAME-remote"
+echo "    HostName $SERVER_IP"
+echo "    Port $PORT"
+echo "    User developer"
+echo "    IdentityFile ~/.ssh/id_rsa"
+echo ""
 echo "3. No VS Code: Ctrl+Shift+P > 'Remote-SSH: Connect to Host' > $WORKSPACE_NAME"
+echo ""
+echo "💡 Compartilhe o IP ($SERVER_IP) e a porta ($PORT) com outros usuários da rede!"

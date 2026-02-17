@@ -30,10 +30,27 @@ O DevBox está rodando em um servidor e pode ser acessado por qualquer pessoa na
 
 ### Passo 2: Configurar Conexão SSH
 
-Adicione isso ao arquivo `~/.ssh/config`:
+O arquivo de configuração SSH varia por sistema operacional:
 
-**Windows:** `C:\Users\SeuNome\.ssh\config`  
-**Mac/Linux:** `~/.ssh/config`
+#### 🪟 Windows
+
+**Local do arquivo:** `C:\Users\SeuNome\.ssh\config`
+
+```
+Host devbox
+    HostName <IP_DO_SERVIDOR>
+    Port 2222
+    User developer
+    IdentityFile C:\Users\SeuNome\.ssh\id_rsa
+```
+
+⚠️ **Importante no Windows:**
+- Use **barras invertidas** (`\`) no `IdentityFile`
+- Se não existir, crie a pasta `.ssh` e o arquivo `config` (sem extensão)
+
+#### 🍎 Mac / 🐧 Linux
+
+**Local do arquivo:** `~/.ssh/config`
 
 ```
 Host devbox
@@ -61,20 +78,27 @@ Quando alguém quiser acesso, precisa te enviar a **chave pública SSH**.
 
 ### Usuário gera sua chave (apenas primeira vez):
 
-**No computador dele:**
-```bash
-# Windows (PowerShell), Mac ou Linux
+#### 🪟 Windows (PowerShell)
+
+```powershell
+# Gerar chave SSH
 ssh-keygen -t rsa -b 4096 -C "email@dele.com"
 
-# Depois pegar a chave pública:
-# Windows:
-type %USERPROFILE%\.ssh\id_rsa.pub
+# Ver a chave pública
+type $env:USERPROFILE\.ssh\id_rsa.pub
+```
 
-# Mac/Linux:
+#### 🍎 Mac / 🐧 Linux
+
+```bash
+# Gerar chave SSH
+ssh-keygen -t rsa -b 4096 -C "email@dele.com"
+
+# Ver a chave pública
 cat ~/.ssh/id_rsa.pub
 ```
 
-Ele copia a saída (começa com `ssh-rsa AAAA...`) e te envia.
+Copie a saída completa (começa com `ssh-rsa AAAA...`) e envie para o administrador.
 
 ### Você adiciona a chave no DevBox:
 
