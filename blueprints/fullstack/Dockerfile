@@ -57,7 +57,7 @@ RUN npm install -g \
     sequelize-cli
 
 # Install Python packages
-RUN pip3 install --no-cache-dir --break-system-packages \
+RUN pip3 install --no-cache-dir --break-system-packages --ignore-installed \
     fastapi \
     uvicorn \
     django \
