@@ -1,5 +1,10 @@
 # 🚀 Docker Development Workspace
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
+[![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
+
 [Português](README.pt-BR.md) | **English**
 
 A simple Docker-based isolated development workspace system, similar to GitHub Codespaces. Run your own containerized development environment with SSH access and VS Code Remote support.

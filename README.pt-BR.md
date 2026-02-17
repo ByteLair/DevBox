@@ -1,5 +1,10 @@
 # 🚀 Workspaces Isolados On-Premise
 
+[![Versão](https://img.shields.io/badge/versão-1.0.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.0.0)
+[![Licença](https://img.shields.io/badge/licença-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-pronto-brightgreen.svg)](https://www.docker.com/)
+[![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
+
 **Português** | [English](README.md)
 
 Sistema simples de workspaces isolados para desenvolvimento, similar ao GitHub Codespaces. Rode seu próprio ambiente de desenvolvimento containerizado com acesso via SSH e VS Code Remote.
