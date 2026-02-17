@@ -170,7 +170,64 @@ Add new users in seconds:
 
 Perfect for teams, schools, or shared development environments! 🚀
 
-## 📂 Project Structure
+## � Multiple Workspaces (Optional)
+
+Need multiple isolated environments? You can run several workspaces simultaneously!
+
+### Quick Setup
+
+Use `docker-compose.yml` instead of `docker-compose-env.yml`:
+
+1. **Edit docker-compose.yml** - duplicate workspace blocks
+2. **Change ports** for each workspace (2222, 2223, 2224...)
+3. **Declare volumes** for each workspace
+4. **Start:** `docker-compose up -d`
+
+### Example Configuration
+
+```yaml
+services:
+  workspace-dev1:
+    ports: ["2222:22"]
+    volumes:
+      - dev1-home:/home/developer
+  
+  workspace-dev2:
+    ports: ["2223:22"]
+    volumes:
+      - dev2-home:/home/developer
+  
+  workspace-frontend:
+    ports: ["2224:22"]
+    volumes:
+      - frontend-home:/home/developer
+
+volumes:
+  dev1-home:
+  dev2-home:
+  frontend-home:
+```
+
+### Connect to Each Workspace
+
+```bash
+ssh -p 2222 developer@localhost  # Workspace 1
+ssh -p 2223 developer@localhost  # Workspace 2
+ssh -p 2224 developer@localhost  # Workspace 3
+```
+
+**Complete guide:** [MULTIPLE-WORKSPACES.md](MULTIPLE-WORKSPACES.md)
+
+### Use Cases
+
+- ✅ **Per-project isolation** (frontend, backend, mobile)
+- ✅ **Per-developer environments** (team A, team B)
+- ✅ **Different tech stacks** (Node.js, Python, Go)
+- ✅ **Resource limits** per workspace
+
+**Your current setup:** Single workspace (simpler, recommended for one user)
+
+## �📂 Project Structure
 
 ```
 .
@@ -188,6 +245,7 @@ Perfect for teams, schools, or shared development environments! 🚀
 ├── ACCESS-WORKSPACE.md          # Workspace access guide
 ├── SSH-SETUP.md                 # SSH configuration guide
 ├── NETWORK-ACCESS.md            # Network/server deployment guide
+├── MULTIPLE-WORKSPACES.md       # Multiple workspaces guide
 └── start-workspace.sh           # Quick start script
 ```
 

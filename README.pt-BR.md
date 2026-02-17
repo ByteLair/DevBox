@@ -170,7 +170,64 @@ Adicione novos usuários em segundos:
 
 Perfeito para times, escolas ou ambientes de desenvolvimento compartilhados! 🚀
 
-## 📂 Estrutura do Projeto
+## � Múltiplos Workspaces (Opcional)
+
+Precisa de múltiplos ambientes isolados? Você pode rodar vários workspaces simultaneamente!
+
+### Configuração Rápida
+
+Use `docker-compose.yml` ao invés de `docker-compose-env.yml`:
+
+1. **Edite docker-compose.yml** - duplique blocos de workspace
+2. **Mude as portas** para cada workspace (2222, 2223, 2224...)
+3. **Declare volumes** para cada workspace
+4. **Inicie:** `docker-compose up -d`
+
+### Exemplo de Configuração
+
+```yaml
+services:
+  workspace-dev1:
+    ports: ["2222:22"]
+    volumes:
+      - dev1-home:/home/developer
+  
+  workspace-dev2:
+    ports: ["2223:22"]
+    volumes:
+      - dev2-home:/home/developer
+  
+  workspace-frontend:
+    ports: ["2224:22"]
+    volumes:
+      - frontend-home:/home/developer
+
+volumes:
+  dev1-home:
+  dev2-home:
+  frontend-home:
+```
+
+### Conectar a Cada Workspace
+
+```bash
+ssh -p 2222 developer@localhost  # Workspace 1
+ssh -p 2223 developer@localhost  # Workspace 2
+ssh -p 2224 developer@localhost  # Workspace 3
+```
+
+**Guia completo:** [MULTIPLOS-WORKSPACES.md](MULTIPLOS-WORKSPACES.md)
+
+### Casos de Uso
+
+- ✅ **Isolamento por projeto** (frontend, backend, mobile)
+- ✅ **Ambientes por desenvolvedor** (time A, time B)
+- ✅ **Diferentes tecnologias** (Node.js, Python, Go)
+- ✅ **Limites de recursos** por workspace
+
+**Sua configuração atual:** Workspace único (mais simples, recomendado para um usuário)
+
+## �📂 Estrutura do Projeto
 
 ```
 .
