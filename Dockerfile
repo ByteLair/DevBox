@@ -1,8 +1,5 @@
 FROM ubuntu:22.04
 
-# Argumento para receber a chave SSH pública
-ARG SSH_PUBLIC_KEY
-
 # Evita prompts interativos durante instalação
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -48,17 +45,10 @@ RUN mkdir /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 
-# Cria diretório .ssh para o developer e adiciona a chave pública
+# Cria diretório .ssh para o developer (chave será configurada em runtime)
 RUN mkdir -p /home/developer/.ssh && \
     chmod 700 /home/developer/.ssh && \
     chown -R developer:developer /home/developer/.ssh
-
-# Adiciona a chave SSH pública se fornecida
-RUN if [ -n "$SSH_PUBLIC_KEY" ]; then \
-        echo "$SSH_PUBLIC_KEY" > /home/developer/.ssh/authorized_keys && \
-        chmod 600 /home/developer/.ssh/authorized_keys && \
-        chown developer:developer /home/developer/.ssh/authorized_keys; \
-    fi
 
 # Define o usuário padrão
 USER developer

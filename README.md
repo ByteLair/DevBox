@@ -661,16 +661,48 @@ sudo cp -r dist/* /var/www/html/
 
 ### ✅ What's protected:
 
-- SSH key authentication only (no password)
-- Root login disabled via SSH
-- Isolated environment per container
-- `.env` file in `.gitignore` (key won't go to GitHub)
+- **SSH key authentication only** (no password login)
+- **Root login disabled** via SSH
+- **Isolated environment** per container
+- **SSH keys configured at runtime** (not baked into image layers)
+- **sshd runs as PID 1** for proper signal handling and clean shutdowns
 
-### ⚠️ Considerations:
+### 🔐 Recommended Security Practices:
 
-- User `developer` has passwordless `sudo` (makes package installation easier)
-- SSH port exposed (2222) - ensure you have a firewall configured
-- Data in `workspace-storage/` is local - consider backups
+**SSH Keys:**
+```bash
+# Use modern ed25519 keys (recommended over RSA)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Or RSA 4096-bit as alternative
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+**Network Security:**
+- ⚠️ **DO NOT expose directly to the internet** - Use firewall or Tailscale VPN
+- ✅ Use **Tailscale** for secure remote access (built-in support)
+- ✅ Configure firewall rules to restrict SSH port access
+- ✅ Use non-standard ports for additional obscurity (e.g., 2222 instead of 22)
+
+**Environment Variables:**
+- ✅ Keep `.env` file out of version control (already in `.gitignore`)
+- ✅ Use environment variables or Docker secrets for sensitive data
+- ✅ Never commit Tailscale auth keys to repositories
+
+### ⚠️ Important Considerations:
+
+1. **Passwordless sudo**: User `developer` has `NOPASSWD` sudo access for easier package installation
+   - **Risk**: Anyone with SSH access has full system control inside container
+   - **Mitigation**: Protect your SSH private key at all costs
+   - **Best for**: Development environments, not production servers
+
+2. **Container isolation**: While containers provide isolation, they share the host kernel
+   - Use Docker security best practices for production deployments
+   - Consider running containers with limited privileges if security is critical
+
+3. **Data persistence**: Volumes in `/home/developer` persist across container recreations
+   - Back up important data regularly
+   - Consider encrypted volumes for sensitive projects
 
 ### To remove passwordless sudo:
 
@@ -679,6 +711,8 @@ Edit the [Dockerfile](Dockerfile) and remove `NOPASSWD`:
 ```dockerfile
 echo "developer ALL=(ALL) ALL" > /etc/sudoers.d/developer && \
 ```
+
+Then rebuild the image.
 
 ## 📦 Backup and Restore
 

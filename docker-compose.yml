@@ -16,7 +16,11 @@ services:
       - dev1-ssh:/home/developer/.ssh  # Chaves SSH persistentes
     environment:
       - TZ=America/Sao_Paulo
-    # Limita recursos (opcional)
+    # Resource limits (compatible with both standalone and swarm mode)
+    mem_limit: 4g
+    memswap_limit: 4g
+    cpus: 2.0
+    # Deploy section for swarm mode
     deploy:
       resources:
         limits:
@@ -39,6 +43,9 @@ services:
       - dev2-ssh:/home/developer/.ssh
     environment:
       - TZ=America/Sao_Paulo
+    # Resource limits
+    mem_limit: 4g
+    cpus: 2.0
     deploy:
       resources:
         limits:

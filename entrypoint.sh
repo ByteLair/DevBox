@@ -117,7 +117,8 @@ echo "║   ✨ ByteLair DevBox Ready!                ║"
 echo "╚════════════════════════════════════════════╝"
 echo ""
 echo "📡 Access Methods:"
-echo "   • Local SSH:     ssh -p <port> developer@localhost"
+echo "   • Local SSH:     ssh -p 22 developer@<host>"
+echo "   • VS Code:       Configure SSH remote with port 22"
 
 if [ -n "$TAILSCALE_AUTH_KEY" ] && [ "$TAILSCALE_IP" != "pending" ]; then
     echo "   • Tailscale SSH: ssh developer@$TAILSCALE_IP"
@@ -130,7 +131,7 @@ echo "🛠️  Type: $(cat /etc/blueprint-type 2>/dev/null || echo 'base')"
 echo ""
 
 # ============================================
-# Keep Container Running
+# Start SSH Daemon as PID 1
 # ============================================
-# Tail a log file to keep container alive
-tail -f /dev/null
+# Run sshd in foreground with proper signal handling
+exec /usr/sbin/sshd -D -e
