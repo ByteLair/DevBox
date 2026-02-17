@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Works correctly with both `docker-compose up` and Swarm mode
   - Eliminates need for `--compatibility` flag
 
+- **Tailscale Safety Guards**: Added checks before using Tailscale commands
+  - Verifies `tailscaled` command exists before attempting to start
+  - Prevents container initialization failures if Tailscale not installed
+  - Shows helpful warning if auth key provided but Tailscale missing
+  - Applied to both Ubuntu (`entrypoint.sh`) and Alpine (`entrypoint-alpine.sh`)
+
 - **Documentation Enhancements**:
   - Added recommendation for modern **ed25519** SSH keys over RSA
   - Clear warnings about `NOPASSWD` sudo and its security implications
