@@ -60,3 +60,23 @@ class Config:
         if name in config:
             config[name].update(updates)
             self._save_config(config)
+    
+    def get_tailscale_key(self) -> Optional[str]:
+        """Get Tailscale auth key"""
+        config = self._load_config()
+        return config.get("_tailscale", {}).get("auth_key")
+    
+    def set_tailscale_key(self, auth_key: str):
+        """Set Tailscale auth key"""
+        config = self._load_config()
+        if "_tailscale" not in config:
+            config["_tailscale"] = {}
+        config["_tailscale"]["auth_key"] = auth_key
+        self._save_config(config)
+    
+    def remove_tailscale_key(self):
+        """Remove Tailscale auth key"""
+        config = self._load_config()
+        if "_tailscale" in config:
+            del config["_tailscale"]
+            self._save_config(config)

@@ -66,7 +66,8 @@ def up(
     port: int = typer.Option(2222, "--port", "-p", help="Porta SSH"),
     cpu: str = typer.Option("4", "--cpu", help="Limite de CPUs"),
     memory: str = typer.Option("8g", "--memory", "-m", help="Limite de memória"),
-    template: Optional[str] = typer.Option(None, "--template", "-t", help="Template do workspace")
+    template: Optional[str] = typer.Option(None, "--template", "-t", help="Template do workspace"),
+    tailscale: bool = typer.Option(False, "--tailscale", help="Habilitar Tailscale para acesso remoto")
 ):
     """🚀 Sobe um workspace de desenvolvimento"""
     
@@ -90,9 +91,18 @@ def up(
     # Choose Docker image based on template
     image_map = {
         "base": "lyskdot/devbox:latest",
+        "minimal": "lyskdot/devbox-minimal:latest",
         "python": "lyskdot/devbox-python:latest",
-        "node": "lyskdot/devbox:latest",  # Will be specialized later
+        "node": "lyskdot/devbox-node:latest",
         "fullstack": "lyskdot/devbox-fullstack:latest",
+        "web": "lyskdot/devbox-web:latest",
+        "ml": "lyskdot/devbox-ml:latest",
+        "devops": "lyskdot/devbox-devops:latest",
+        "go": "lyskdot/devbox-go:latest",
+        "rust": "lyskdot/devbox-rust:latest",
+        "php": "lyskdot/devbox-php:latest",
+        "ruby": "lyskdot/devbox-ruby:latest",
+        "java": "lyskdot/devbox-java:latest",
     }
     image = image_map.get(template or "base", "lyskdot/devbox:latest")
     
@@ -117,6 +127,21 @@ def up(
     
     # Get SSH key
     ssh_key = get_ssh_public_key()
+    
+    # Prepare environment variables
+    env_vars = {"SSH_PUBLIC_KEY": ssh_key}
+    
+    # Add Tailscale if requested
+    if tailscale:
+        tailscale_key = config.get_tailscale_key()
+        if not tailscale_key:
+            console.print("[yellow]⚠️  Tailscale habilitado mas nenhuma chave configurada[/yellow]")
+            console.print("[yellow]Configure com: bytelair tailscale setup <auth_key>[/yellow]")
+            raise typer.Exit(1)
+        
+        env_vars["TAILSCALE_AUTH_KEY"] = tailscale_key
+        env_vars["TAILSCALE_HOSTNAME"] = f"bytelair-{name}"
+        console.print(f"[cyan]🌐 Tailscale habilitado (hostname: bytelair-{name})[/cyan]")
     
     console.print(f"[cyan]🐳 Criando workspace '{name}'...[/cyan]")
     console.print(f"[dim]Imagem: {image}[/dim]")
@@ -143,10 +168,12 @@ def up(
             name=container_name,
             detach=True,
             ports={"22/tcp": port},
-            environment={"SSH_PUBLIC_KEY": ssh_key},
+            environment=env_vars,
             volumes={volume_name: {"bind": "/home/developer", "mode": "rw"}},
             cpu_quota=int(float(cpu) * 100000),
             mem_limit=memory,
+            cap_add=["NET_ADMIN", "SYS_MODULE"] if tailscale else None,
+            devices=["/dev/net/tun:/dev/net/tun"] if tailscale else None,
             restart_policy={"Name": "unless-stopped"}
         )
         
@@ -161,7 +188,26 @@ def up(
         config.save_workspace(name, workspace_config)
         
         console.print(f"\n[green]✅ Workspace '{name}' criado com sucesso![/green]")
-        console.print(f"\n[cyan]📡 Conectar via SSH:[/cyan]")
+        
+        if tailscale:
+            console.print(f"\n[cyan]🌐 Aguardando conexão Tailscale...[/cyan]")
+            import time
+            time.sleep(5)
+            
+            # Get Tailscale IP
+            try:
+                ip_result = container.exec_run("tailscale ip -4")
+                if ip_result.exit_code == 0:
+                    tailscale_ip = ip_result.output.decode().strip()
+                    console.print(f"\n[green]✅ Tailscale conectado![/green]")
+                    console.print(f"\n[cyan]🌐 Acesso Remoto:[/cyan]")
+                    console.print(f"[bold]ssh developer@{tailscale_ip}[/bold]")
+                    console.print(f"\n[cyan]💻 VS Code Remoto:[/cyan]")
+                    console.print(f"[bold]code --remote ssh-remote+developer@{tailscale_ip} /home/developer[/bold]")
+            except:
+                console.print(f"[yellow]⚠️  Use 'bytelair tailscale status {name}' para verificar IP[/yellow]")
+        
+        console.print(f"\n[cyan]📡 Conectar via SSH Local:[/cyan]")
         console.print(f"[bold]ssh -p {port} developer@localhost[/bold]")
         console.print(f"\n[cyan]💻 Conectar via VS Code:[/cyan]")
         console.print(f"[bold]bytelair connect {name}[/bold]")
@@ -373,20 +419,65 @@ def template(action: str = typer.Argument(help="list ou use")):
             "description": "Ubuntu 22.04 + Node.js 20 + Python 3.10 + Git",
             "image": "lyskdot/devbox:latest"
         },
+        "minimal": {
+            "name": "Minimal",
+            "description": "Alpine Linux - Ultra-lightweight (~50MB)",
+            "image": "lyskdot/devbox-minimal:latest"
+        },
         "python": {
             "name": "Python Data Science",
-            "description": "Python + Jupyter + Pandas + NumPy + Scikit-learn",
+            "description": "Python + Jupyter + Pandas + NumPy + Scikit-learn + TensorFlow",
             "image": "lyskdot/devbox-python:latest"
         },
         "node": {
             "name": "Node.js",
-            "description": "Node.js 20 LTS + npm + yarn + pnpm",
-            "image": "lyskdot/devbox:latest"
+            "description": "Node.js 20 LTS + npm + yarn + pnpm + bun + TypeScript",
+            "image": "lyskdot/devbox-node:latest"
         },
         "fullstack": {
             "name": "Full Stack",
-            "description": "Node.js + Python + PostgreSQL + Redis",
+            "description": "Node.js + Python + PostgreSQL + Redis + Nginx + Docker",
             "image": "lyskdot/devbox-fullstack:latest"
+        },
+        "web": {
+            "name": "Web Frontend",
+            "description": "React + Vue + Angular + Tailwind + Testing tools",
+            "image": "lyskdot/devbox-web:latest"
+        },
+        "ml": {
+            "name": "Machine Learning",
+            "description": "TensorFlow + PyTorch + JAX + Jupyter + MLflow + Transformers",
+            "image": "lyskdot/devbox-ml:latest"
+        },
+        "devops": {
+            "name": "DevOps",
+            "description": "Terraform + Ansible + Kubernetes + Docker + Cloud CLIs",
+            "image": "lyskdot/devbox-devops:latest"
+        },
+        "go": {
+            "name": "Go",
+            "description": "Go 1.22 + Tools + Debugger (Delve) + Air",
+            "image": "lyskdot/devbox-go:latest"
+        },
+        "rust": {
+            "name": "Rust",
+            "description": "Rust stable + nightly + Cargo + Clippy + rust-analyzer",
+            "image": "lyskdot/devbox-rust:latest"
+        },
+        "php": {
+            "name": "PHP",
+            "description": "PHP 8.1 + Laravel + Composer + MySQL + Nginx",
+            "image": "lyskdot/devbox-php:latest"
+        },
+        "ruby": {
+            "name": "Ruby",
+            "description": "Ruby 3.3 + Rails + rbenv + PostgreSQL + Redis",
+            "image": "lyskdot/devbox-ruby:latest"
+        },
+        "java": {
+            "name": "Java",
+            "description": "OpenJDK 21 + Maven + Gradle + Spring Boot CLI",
+            "image": "lyskdot/devbox-java:latest"
         }
     }
     
@@ -417,6 +508,84 @@ def version():
     console.print("[bold cyan]ByteLair DevBox CLI[/bold cyan]")
     console.print("Version: [yellow]1.1.0[/yellow]")
     console.print("Docker Image: [yellow]lyskdot/devbox:latest[/yellow]")
+
+
+# ============================================
+# Tailscale Commands
+# ============================================
+
+tailscale_app = typer.Typer(help="🌐 Gerencia configuração Tailscale")
+app.add_typer(tailscale_app, name="tailscale")
+
+
+@tailscale_app.command("setup")
+def tailscale_setup(auth_key: str = typer.Argument(..., help="Tailscale Auth Key")):
+    """🔑 Configura Tailscale auth key para acesso remoto"""
+    
+    if not auth_key.startswith("tskey-"):
+        console.print("[red]❌ Auth key inválida. Deve começar com 'tskey-'[/red]")
+        console.print("[yellow]Obtenha uma chave em: https://login.tailscale.com/admin/settings/keys[/yellow]")
+        raise typer.Exit(1)
+    
+    config.set_tailscale_key(auth_key)
+    console.print("[green]✅ Tailscale configurado com sucesso![/green]")
+    console.print("\n[cyan]🚀 Agora você pode criar workspaces com acesso remoto:[/cyan]")
+    console.print("[bold]bytelair up --tailscale[/bold]")
+    console.print("\n[dim]Seus workspaces estarão acessíveis de qualquer lugar via Tailscale![/dim]")
+
+
+@tailscale_app.command("remove")
+def tailscale_remove():
+    """🗑️  Remove configuração Tailscale"""
+    
+    config.remove_tailscale_key()
+    console.print("[green]✅ Configuração Tailscale removida[/green]")
+
+
+@tailscale_app.command("status")
+def tailscale_status(name: Optional[str] = typer.Argument(None, help="Nome do workspace")):
+    """📊 Mostra status Tailscale de um workspace"""
+    
+    client = get_docker_client()
+    
+    if not name:
+        name = Path.cwd().name
+    
+    container_name = f"bytelair-{name}"
+    
+    try:
+        container = client.containers.get(container_name)
+        
+        # Check if Tailscale is running
+        exec_result = container.exec_run("tailscale status --json")
+        
+        if exec_result.exit_code == 0:
+            import json
+            status = json.loads(exec_result.output.decode())
+            
+            console.print(f"\n[bold cyan]🌐 Tailscale Status: {name}[/bold cyan]\n")
+            
+            table = Table(show_header=False, box=None)
+            table.add_column("Key", style="cyan")
+            table.add_column("Value", style="white")
+            
+            # Get Tailscale IP
+            ip_result = container.exec_run("tailscale ip -4")
+            tailscale_ip = ip_result.output.decode().strip() if ip_result.exit_code == 0 else "N/A"
+            
+            table.add_row("Status", "[green]✅ Conectado[/green]")
+            table.add_row("Tailscale IP", tailscale_ip)
+            table.add_row("Hostname", status.get("Self", {}).get("HostName", "N/A"))
+            table.add_row("SSH", f"ssh developer@{tailscale_ip}")
+            
+            console.print(table)
+        else:
+            console.print(f"[yellow]⚠️  Tailscale não está rodando no workspace '{name}'[/yellow]")
+            console.print("[dim]Use 'bytelair up --tailscale' para habilitar[/dim]")
+        
+    except docker.errors.NotFound:
+        console.print(f"[red]❌ Workspace '{name}' não encontrado[/red]")
+        raise typer.Exit(1)
 
 
 def main():
