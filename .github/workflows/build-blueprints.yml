@@ -1,0 +1,101 @@
+name: Build & Publish Blueprints
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      blueprints:
+        description: 'Blueprints to build (comma-separated, or "all")'
+        required: true
+        default: 'all'
+
+env:
+  DOCKER_USER: lyskdot
+  VERSION: '1.1.0'
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      blueprints: ${{ steps.set-matrix.outputs.blueprints }}
+    steps:
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          if [[ "${{ github.event.inputs.blueprints }}" == "all" ]] || [[ -z "${{ github.event.inputs.blueprints }}" ]]; then
+            echo 'blueprints=["minimal","python","node","fullstack","web","ml","devops","go","rust","php","ruby","java"]' >> $GITHUB_OUTPUT
+          else
+            # Convert comma-separated list to JSON array
+            IFS=',' read -ra ADDR <<< "${{ github.event.inputs.blueprints }}"
+            BLUEPRINTS=$(printf '%s\n' "${ADDR[@]}" | jq -R . | jq -s .)
+            echo "blueprints=$BLUEPRINTS" >> $GITHUB_OUTPUT
+          fi
+
+  build-blueprints:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        blueprint: ${{ fromJson(needs.build-matrix.outputs.blueprints) }}
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ env.VERSION }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
+          echo "minor=$(echo $VERSION | cut -d. -f1-2)" >> $GITHUB_OUTPUT
+      
+      - name: Build and push ${{ matrix.blueprint }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ./blueprints/${{ matrix.blueprint }}
+          file: ./blueprints/${{ matrix.blueprint }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest
+            ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.version }}
+            ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.minor }}
+            ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.major }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.title=ByteLair DevBox - ${{ matrix.blueprint }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+      
+      - name: Test image
+        run: |
+          docker run --rm ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest echo "✅ Image OK"
+
+  summary:
+    needs: build-blueprints
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🎉 Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All blueprints have been built and published to Docker Hub!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 View at: https://hub.docker.com/u/${{ env.DOCKER_USER }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,45 @@
+name: Deploy DevBox
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Permite trigger manual
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, bytelair]
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Verificar Docker
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Parar containers antigos
+        continue-on-error: true
+        run: |
+          docker compose down || true
+          echo "✅ Containers antigos removidos"
+
+      - name: Limpar imagens antigas
+        continue-on-error: true
+        run: |
+          docker image prune -f
+          echo "✅ Imagens antigas limpas"
+
+      - name: Build e start workspace
+        run: |
+          docker compose up -d --build
+          echo "✅ DevBox atualizado com sucesso!"
+
+      - name: Verificar status
+        run: |
+          docker compose ps
+          docker ps | grep workspace || echo "⚠️ Nenhum container 'workspace' encontrado"
+          
+      - name: Mostrar logs (últimas 20 linhas)
+        if: always()
+        run: docker compose logs --tail=20

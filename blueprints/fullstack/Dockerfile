@@ -108,7 +108,7 @@ WORKDIR /home/developer
 EXPOSE 22 3000 5000 5432 5173 6379 8000 8080 80
 
 # Copy entrypoint
-COPY ../entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
