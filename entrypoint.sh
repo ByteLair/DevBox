@@ -109,10 +109,65 @@ if command -v php-fpm8.1 >/dev/null 2>&1; then
 fi
 
 # ============================================
+# Security: Audit Logging Setup
+# ============================================
+# Create audit log directory and file
+mkdir -p /var/log/devbox
+touch /var/log/devbox/audit.log
+chown developer:developer /var/log/devbox/audit.log
+chmod 644 /var/log/devbox/audit.log
+
+# Create SSH login wrapper for audit logging
+cat > /usr/local/bin/ssh-audit-wrapper.sh << 'AUDIT_EOF'
+#!/bin/bash
+# Log SSH access
+echo "$(date -Iseconds) - SSH_LOGIN: user=$(whoami) from=$SSH_CLIENT command=$SSH_ORIGINAL_COMMAND" >> /var/log/devbox/audit.log
+
+# Execute original shell or command
+if [ -n "$SSH_ORIGINAL_COMMAND" ]; then
+    exec $SHELL -c "$SSH_ORIGINAL_COMMAND"
+else
+    exec $SHELL
+fi
+AUDIT_EOF
+
+chmod +x /usr/local/bin/ssh-audit-wrapper.sh
+
+# ============================================
+# Security: SSH Rate Limiting (if available)
+# ============================================
+if command -v iptables >/dev/null 2>&1; then
+    echo "🛡️  Configuring SSH rate limiting..."
+    
+    # Create SSH rate limiting chain
+    iptables -N SSH_RATELIMIT 2>/dev/null || iptables -F SSH_RATELIMIT
+    
+    # Allow established connections
+    iptables -A SSH_RATELIMIT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    
+    # Rate limit: max 4 new connections per 60 seconds per IP
+    iptables -A SSH_RATELIMIT -m recent --set --name SSH_LIMIT
+    iptables -A SSH_RATELIMIT -m recent --update --seconds 60 --hitcount 5 --name SSH_LIMIT -j LOG --log-prefix "SSH_RATELIMIT: "
+    iptables -A SSH_RATELIMIT -m recent --update --seconds 60 --hitcount 5 --name SSH_LIMIT -j DROP
+    iptables -A SSH_RATELIMIT -j ACCEPT
+    
+    # Apply to SSH port
+    iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j SSH_RATELIMIT
+    
+    echo "✅ SSH rate limiting enabled (max 4 connections/min per IP)"
+else
+    echo "ℹ️  iptables not available - SSH rate limiting disabled"
+    echo "   (Run container with --cap-add=NET_ADMIN to enable)"
+fi
+
+# ============================================
 # SSH Service
 # ============================================
 echo "🔌 Starting SSH service..."
 service ssh start
+
+# Log startup
+echo "$(date -Iseconds) - CONTAINER_START: workspace=$(hostname) type=$(cat /etc/blueprint-type 2>/dev/null || echo 'base')" >> /var/log/devbox/audit.log
 
 # ============================================
 # Workspace Information
@@ -134,6 +189,7 @@ fi
 echo ""
 echo "📂 Workspace: /home/developer"
 echo "🛠️  Type: $(cat /etc/blueprint-type 2>/dev/null || echo 'base')"
+echo "📋 Audit Log: /var/log/devbox/audit.log"
 echo ""
 
 # ============================================

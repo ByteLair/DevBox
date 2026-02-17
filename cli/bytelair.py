@@ -61,6 +61,18 @@ def get_ssh_public_key():
 
 
 @app.command()
+def init():
+    """🎯 Interactive setup wizard for first-time users"""
+    try:
+        from cli.onboarding import run_wizard
+        run_wizard()
+    except ImportError:
+        console.print("[red]❌ Could not load onboarding wizard[/red]")
+        console.print("[yellow]Please reinstall bytelair CLI[/yellow]")
+        raise typer.Exit(1)
+
+
+@app.command()
 def up(
     name: Optional[str] = typer.Option(None, "--name", "-n", help="Nome do workspace"),
     port: int = typer.Option(2222, "--port", "-p", help="Porta SSH"),
@@ -248,7 +260,12 @@ def down(
             console.print(f"[dim]Use 'bytelair up {name}' para resumir[/dim]")
             
     except docker.errors.NotFound:
-        console.print(f"[red]❌ Workspace '{name}' não encontrado[/red]")
+        console.print("\n[bold red]❌ Workspace not found![/bold red]\n")
+        console.print(f"⚠️  [yellow]No workspace named '{name}' exists[/yellow]\n")
+        console.print("💡 [cyan]Try these:[/cyan]")
+        console.print("   • [white]bytelair list[/white] - See all workspaces")
+        console.print("   • [white]bytelair up[/white] - Create a new workspace")
+        console.print("   • [white]bytelair init[/white] - Run setup wizard\n")
         raise typer.Exit(1)
 
 
