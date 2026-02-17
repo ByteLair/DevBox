@@ -27,10 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       blueprints: ${{ steps.set-matrix.outputs.blueprints }}
+      use_self_hosted: ${{ steps.set-matrix.outputs.use_self_hosted }}
     steps:
       - name: Set matrix
         id: set-matrix
         run: |
+          # Determinar blueprints
           if [[ "${{ github.event.inputs.blueprints }}" == "all" ]] || [[ -z "${{ github.event.inputs.blueprints }}" ]]; then
             echo 'blueprints=["minimal","python","node","fullstack","web","ml","devops","go","rust","php","ruby","java"]' >> $GITHUB_OUTPUT
           else
@@ -39,13 +41,20 @@ jobs:
             BLUEPRINTS=$(printf '%s\n' "${ADDR[@]}" | jq -R . | jq -s .)
             echo "blueprints=$BLUEPRINTS" >> $GITHUB_OUTPUT
           fi
+          
+          # Determinar se usa self-hosted (default true para tag push)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "use_self_hosted=${{ github.event.inputs.use_self_hosted }}" >> $GITHUB_OUTPUT
+          else
+            echo "use_self_hosted=true" >> $GITHUB_OUTPUT
+          fi
 
   build-blueprints:
     needs: build-matrix
-    runs-on: ${{ github.event.inputs.use_self_hosted == 'true' && fromJSON('["self-hosted", "bytelair"]') || 'ubuntu-latest' }}
+    runs-on: ${{ needs.build-matrix.outputs.use_self_hosted == 'true' && fromJSON('["self-hosted", "bytelair"]') || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
-      max-parallel: ${{ github.event.inputs.use_self_hosted == 'true' && 3 || 12 }}
+      max-parallel: ${{ needs.build-matrix.outputs.use_self_hosted == 'true' && 3 || 12 }}
       matrix:
         blueprint: ${{ fromJson(needs.build-matrix.outputs.blueprints) }}
     
@@ -62,11 +71,11 @@ jobs:
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        if: github.event.inputs.use_self_hosted != 'true'
+        if: needs.build-matrix.outputs.use_self_hosted != 'true'
       
       - name: Login no Docker Hub
         uses: docker/login-action@v3
-        if: github.event.inputs.use_self_hosted != 'true'
+        if: needs.build-matrix.outputs.use_self_hosted != 'true'
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -84,7 +93,7 @@ jobs:
           echo "minor=$(echo $VERSION | cut -d. -f1-2)" >> $GITHUB_OUTPUT
       
       - name: Build and push ${{ matrix.blueprint }} (Self-Hosted)
-        if: github.event.inputs.use_self_hosted == 'true'
+        if: needs.build-matrix.outputs.use_self_hosted == 'true'
         run: |
           cd blueprints/${{ matrix.blueprint }}
           docker build -t ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest \
@@ -98,7 +107,7 @@ jobs:
           echo "✅ ${{ matrix.blueprint }} built and pushed!"
       
       - name: Build and push ${{ matrix.blueprint }} (GitHub-Hosted)
-        if: github.event.inputs.use_self_hosted != 'true'
+        if: needs.build-matrix.outputs.use_self_hosted != 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./blueprints/${{ matrix.blueprint }}
@@ -121,7 +130,7 @@ jobs:
           docker run --rm ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest echo "✅ Image OK"
 
   summary:
-    needs: build-blueprints
+    needs: [build-matrix, build-blueprints]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -133,6 +142,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🔗 View at: https://hub.docker.com/u/${{ env.DOCKER_USER }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Runner: ${{ github.event.inputs.use_self_hosted == 'true' && 'Self-Hosted' || 'GitHub-Hosted' }}" >> $GITHUB_STEP_SUMMARY
-
-          echo "🔗 View at: https://hub.docker.com/u/${{ env.DOCKER_USER }}" >> $GITHUB_STEP_SUMMARY
+          echo "Runner: ${{ needs.build-matrix.outputs.use_self_hosted == 'true' && 'Self-Hosted (bytelair)' || 'GitHub-Hosted' }}" >> $GITHUB_STEP_SUMMARY
