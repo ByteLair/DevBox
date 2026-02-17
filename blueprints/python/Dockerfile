@@ -95,4 +95,8 @@ EXPOSE 22 8888
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Health check - verify SSH daemon is responsive
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD nc -z localhost 22 || exit 1
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
