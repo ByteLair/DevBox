@@ -27,16 +27,44 @@ Sistema simples de workspaces isolados para desenvolvimento, similar ao GitHub C
 - Par de chaves SSH (pública/privada)
 - VS Code com extensão "Remote - SSH" (opcional, mas recomendado)
 
-## 🚀 Instalação Rápida
+## 🚀 Métodos de Instalação
 
-### 1. Clone o repositório
+### ⚡ Método 1: Instalação Automática com Um Comando (Mais Fácil)
+
+Tudo automatizado - baixa, configura SSH e inicia:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/install.sh | bash
+```
+
+### 🐳 Método 2: Execução Rápida via Docker Hub (Sem Clone)
+
+Baixa imagem pronta e executa:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ByteLair/DevBox/main/quick-run.sh | bash
+```
+
+Ou manualmente:
+```bash
+docker pull bytelair/devbox:latest
+docker run -d -p 2222:22 \
+  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
+  -v devbox-data:/home/developer \
+  --name devbox \
+  bytelair/devbox:latest
+```
+
+### 📦 Método 3: Instalação Manual (Controle Total)
+
+#### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/ByteLair/DevBox.git
 cd DevBox
 ```
 
-### 2. Configure sua chave SSH
+#### 2. Configure sua chave SSH
 
 **IMPORTANTE:** Antes de iniciar o workspace, você precisa configurar sua chave SSH pública.
 
