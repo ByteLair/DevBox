@@ -1,5 +1,5 @@
 # ByteLair DevBox - Ruby Blueprint
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL maintainer="ByteLair <hello@bytelair.dev>"
 LABEL description="Ruby workspace with Rails, rbenv, PostgreSQL, Redis"

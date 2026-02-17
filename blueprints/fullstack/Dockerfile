@@ -1,5 +1,5 @@
 # ByteLair DevBox - Full Stack Blueprint
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL maintainer="ByteLair <hello@bytelair.dev>"
 LABEL description="Full Stack workspace with Node.js, Python, PostgreSQL, Redis, Nginx"
