@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     nano \
     build-essential \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Tailscale
