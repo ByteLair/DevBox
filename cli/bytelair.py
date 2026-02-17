@@ -18,6 +18,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from project_detector import ProjectDetector
 from config import Config
 from snapshots import SnapshotManager
+from sync import SettingsSync
 
 app = typer.Typer(
     name="bytelair",
@@ -689,6 +690,158 @@ def snapshot_delete(
         manager.delete_snapshot(snapshot, force)
     except Exception as e:
         console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="sync-settings")
+def sync_settings(
+    workspace: str = typer.Argument(..., help="Nome do workspace"),
+    direction: str = typer.Option("push", "--direction", "-d", help="Direção: push (local->workspace) ou pull (workspace->local)")
+):
+    """⚙️  Sincroniza configurações do VS Code"""
+    if direction not in ["push", "pull"]:
+        console.print("[red]❌ Direção deve ser 'push' ou 'pull'[/red]")
+        raise typer.Exit(1)
+    
+    sync = SettingsSync()
+    try:
+        sync.sync_vscode_settings(workspace, direction)
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="sync-dotfiles")
+def sync_dotfiles(
+    workspace: str = typer.Argument(..., help="Nome do workspace"),
+    direction: str = typer.Option("push", "--direction", "-d", help="Direção: push ou pull"),
+    files: Optional[str] = typer.Option(None, "--files", "-f", help="Lista de arquivos separados por vírgula (ex: .bashrc,.vimrc)")
+):
+    """📝 Sincroniza dotfiles (.bashrc, .gitconfig, etc)"""
+    if direction not in ["push", "pull"]:
+        console.print("[red]❌ Direção deve ser 'push' ou 'pull'[/red]")
+        raise typer.Exit(1)
+    
+    file_list = files.split(',') if files else None
+    
+    sync = SettingsSync()
+    try:
+        sync.sync_dotfiles(workspace, direction, file_list)
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="sync-extensions")
+def sync_extensions(
+    workspace: str = typer.Argument(..., help="Nome do workspace")
+):
+    """🧩 Exporta lista de extensões do VS Code"""
+    sync = SettingsSync()
+    try:
+        sync.sync_extensions(workspace)
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="port-add")
+def port_add(
+    workspace: str = typer.Argument(..., help="Nome do workspace"),
+    container_port: int = typer.Argument(..., help="Porta do container"),
+    host_port: int = typer.Argument(..., help="Porta do host")
+):
+    """🔌 Adiciona um port forwarding dinâmico"""
+    client = get_docker_client()
+    container_name = f"bytelair-{workspace}"
+    
+    try:
+        container = client.containers.get(container_name)
+        
+        if container.status != "running":
+            console.print(f"[yellow]⚠️  Container não está rodando (status: {container.status})[/yellow]")
+            console.print(f"[yellow]Inicie o workspace com: bytelair up {workspace}[/yellow]")
+            raise typer.Exit(1)
+        
+        # Docker doesn't support dynamic port mapping on running containers
+        # We need to use socat or iptables for this
+        console.print("[yellow]⚠️  Port forwarding dinâmico requer reiniciar o container[/yellow]")
+        console.print(f"[cyan]Alternativa: Use SSH port forwarding:[/cyan]")
+        console.print(f"[bold]ssh -L {host_port}:localhost:{container_port} -p <workspace_port> developer@localhost[/bold]")
+        
+        # Show current port mappings
+        ports = container.attrs.get('NetworkSettings', {}).get('Ports', {})
+        if ports:
+            console.print(f"\n[cyan]Portas atuais do workspace '{workspace}':[/cyan]")
+            table = Table(show_header=True, header_style="bold cyan")
+            table.add_column("Container Port")
+            table.add_column("Host Port")
+            
+            for port, bindings in ports.items():
+                if bindings:
+                    for binding in bindings:
+                        table.add_row(port, binding.get('HostPort', 'N/A'))
+            
+            console.print(table)
+        
+    except docker.errors.NotFound:
+        console.print(f"[red]❌ Workspace '{workspace}' não encontrado[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="port-list")
+def port_list(
+    workspace: str = typer.Argument(..., help="Nome do workspace")
+):
+    """📋 Lista port forwardings ativos"""
+    client = get_docker_client()
+    container_name = f"bytelair-{workspace}"
+    
+    try:
+        container = client.containers.get(container_name)
+        ports = container.attrs.get('NetworkSettings', {}).get('Ports', {})
+        
+        if not ports or not any(ports.values()):
+            console.print(f"[yellow]Nenhuma porta exposta no workspace '{workspace}'[/yellow]")
+            return
+        
+        console.print(f"\n[bold cyan]📡 Portas do workspace '{workspace}':[/bold cyan]\n")
+        
+        table = Table(show_header=True, header_style="bold cyan")
+        table.add_column("Container Port", style="cyan")
+        table.add_column("Protocol", style="dim")
+        table.add_column("Host Port", style="green")
+        table.add_column("Host IP", style="dim")
+        
+        for port, bindings in sorted(ports.items()):
+            if bindings:
+                for binding in bindings:
+                    host_ip = binding.get('HostIp', '0.0.0.0')
+                    host_port = binding.get('HostPort', 'N/A')
+                    
+                    # Parse port and protocol
+                    if '/' in port:
+                        port_num, protocol = port.split('/')
+                    else:
+                        port_num, protocol = port, 'tcp'
+                    
+                    # Show connection string for common services
+                    if int(port_num) == 22:
+                        connection = f"ssh -p {host_port} developer@localhost"
+                    elif int(port_num) == 3000:
+                        connection = f"http://localhost:{host_port}"
+                    elif int(port_num) == 8080:
+                        connection = f"http://localhost:{host_port}"
+                    else:
+                        connection = f"localhost:{host_port}"
+                    
+                    table.add_row(port_num, protocol, host_port, host_ip if host_ip != '0.0.0.0' else 'all interfaces')
+        
+        console.print(table)
+        console.print(f"\n[dim]💡 Para adicionar mais portas, recrie o workspace com as portas desejadas[/dim]")
+        
+    except docker.errors.NotFound:
+        console.print(f"[red]❌ Workspace '{workspace}' não encontrado[/red]")
         raise typer.Exit(1)
 
 
