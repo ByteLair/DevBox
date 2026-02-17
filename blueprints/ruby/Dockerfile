@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libffi-dev \
     # Database
-    postgresql-15 \
+    postgresql-16 \
     postgresql-contrib \
     libpq-dev \
     redis-server \

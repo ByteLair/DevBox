@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     build-essential \
     # Database servers
-    postgresql-15 \
+    postgresql-16 \
     postgresql-contrib \
     redis-server \
     # Web servers
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     docker.io \
     docker-compose \
     # Python
-    python3.11 \
+    python3.12 \
     python3-pip \
     python3-dev \
     # Database clients
