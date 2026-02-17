@@ -14,8 +14,10 @@ from typing import Optional
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from project_detector import ProjectDetector
 from config import Config
+from snapshots import SnapshotManager
 
 app = typer.Typer(
     name="bytelair",
@@ -58,6 +60,33 @@ def get_ssh_public_key():
     )
     
     return (ssh_dir / "id_ed25519.pub").read_text().strip()
+
+
+def pull_image_with_progress(client, image):
+    """Pull Docker image with progress bar"""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task(f"[cyan]Downloading {image}...", total=None)
+        
+        try:
+            # Pull image with low-level API to get progress
+            for line in client.api.pull(image, stream=True, decode=True):
+                if 'status' in line:
+                    status = line['status']
+                    if 'progress' in line:
+                        progress.update(task, description=f"[cyan]{status}: {line['progress']}")
+                    else:
+                        progress.update(task, description=f"[cyan]{status}")
+            
+            progress.update(task, completed=True, description=f"[green]✅ Downloaded {image}")
+        except Exception as e:
+            progress.stop()
+            raise e
 
 
 @app.command()
@@ -165,8 +194,7 @@ def up(
         try:
             client.images.get(image)
         except docker.errors.ImageNotFound:
-            console.print(f"[cyan]📥 Baixando imagem {image}...[/cyan]")
-            client.images.pull(image)
+            pull_image_with_progress(client, image)
         
         # Create volume
         try:
@@ -602,6 +630,65 @@ def tailscale_status(name: Optional[str] = typer.Argument(None, help="Nome do wo
         
     except docker.errors.NotFound:
         console.print(f"[red]❌ Workspace '{name}' não encontrado[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="snapshot-create")
+def snapshot_create(
+    workspace: str = typer.Argument(..., help="Nome do workspace"),
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Nome do snapshot (padrão: timestamp)"),
+    message: str = typer.Option("", "--message", "-m", help="Descrição do snapshot")
+):
+    """📸 Cria um snapshot do workspace"""
+    manager = SnapshotManager()
+    try:
+        snapshot_name = manager.create_snapshot(workspace, name, message)
+        console.print(f"\n[green]💡 Dica:[/green] Use [bold]bytelair snapshot-restore {snapshot_name}[/bold] para restaurar")
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="snapshot-list")
+def snapshot_list(
+    workspace: Optional[str] = typer.Option(None, "--workspace", "-w", help="Filtrar por workspace")
+):
+    """📋 Lista todos os snapshots"""
+    manager = SnapshotManager()
+    snapshots = manager.list_snapshots(workspace)
+    manager.show_snapshots_table(snapshots)
+    
+    if snapshots:
+        total_size = sum(s.get('size_mb', 0) for s in snapshots)
+        console.print(f"\n[dim]Total: {len(snapshots)} snapshot(s), {total_size:.1f} MB[/dim]")
+
+
+@app.command(name="snapshot-restore")
+def snapshot_restore(
+    snapshot: str = typer.Argument(..., help="Nome do snapshot"),
+    workspace: Optional[str] = typer.Option(None, "--workspace", "-w", help="Nome do novo workspace"),
+    port: int = typer.Option(2222, "--port", "-p", help="Porta SSH")
+):
+    """♻️  Restaura um workspace a partir de um snapshot"""
+    manager = SnapshotManager()
+    try:
+        manager.restore_snapshot(snapshot, workspace, port)
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command(name="snapshot-delete")
+def snapshot_delete(
+    snapshot: str = typer.Argument(..., help="Nome do snapshot"),
+    force: bool = typer.Option(False, "--force", "-f", help="Forçar deleção sem confirmação")
+):
+    """🗑️  Deleta um snapshot"""
+    manager = SnapshotManager()
+    try:
+        manager.delete_snapshot(snapshot, force)
+    except Exception as e:
+        console.print(f"[red]❌ Erro: {e}[/red]")
         raise typer.Exit(1)
 
 

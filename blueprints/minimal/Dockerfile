@@ -6,6 +6,11 @@ LABEL maintainer="ByteLair <hello@bytelair.dev>"
 LABEL description="Minimal DevBox - Alpine Linux with SSH only"
 LABEL version="1.1.0"
 
+# Configure timezone and locale
+ENV TZ=UTC
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 # Install only essential packages
 RUN apk add --no-cache \
     openssh-server \

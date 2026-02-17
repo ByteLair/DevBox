@@ -5,6 +5,11 @@ LABEL maintainer="ByteLair <hello@bytelair.dev>"
 LABEL description="Java workspace with OpenJDK 21, Maven, Gradle, Spring Boot"
 LABEL version="1.1.0"
 
+# Configure timezone and locale
+ENV TZ=UTC
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies

@@ -5,6 +5,11 @@ LABEL maintainer="ByteLair <hello@bytelair.dev>"
 LABEL description="Go workspace with latest Go versions and development tools"
 LABEL version="1.1.0"
 
+# Configure timezone and locale
+ENV TZ=UTC
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies

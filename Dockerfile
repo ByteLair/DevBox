@@ -3,6 +3,11 @@ FROM ubuntu:22.04
 # Evita prompts interativos durante instalação
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Configure timezone and locale
+ENV TZ=UTC
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 # Atualiza e instala ferramentas básicas
 RUN apt-get update && apt-get install -y \
     git \
@@ -64,5 +69,9 @@ EXPOSE 22
 # Script de inicialização
 COPY --chown=root:root entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Health check - verify SSH daemon is responsive
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD nc -z localhost 22 || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
