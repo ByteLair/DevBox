@@ -1,0 +1,47 @@
+// DevBox - VS Code Dev Container Configuration
+{
+	"name": "DevBox Workspace",
+	
+	// Use existing container
+	"dockerComposeFile": ["../../docker-compose-env.yml"],
+	"service": "workspace-dev",
+	"workspaceFolder": "/home/developer",
+	
+	// User to run VS Code Server as
+	"remoteUser": "developer",
+	
+	// Features to add to the dev container
+	"features": {},
+	
+	// VS Code settings
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+						"path": "/bin/bash"
+					}
+				}
+			},
+			
+			// Extensions to install automatically
+			"extensions": [
+				"ms-vscode.vscode-typescript-next",
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"ms-python.python",
+				"ms-python.vscode-pylance"
+			]
+		}
+	},
+	
+	// Port forwarding
+	"forwardPorts": [],
+	
+	// Run commands after container creation
+	"postCreateCommand": "echo '🚀 DevBox is ready!'",
+	
+	// Mount the workspace storage
+	"mounts": []
+}

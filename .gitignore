@@ -9,6 +9,7 @@ ACESSO-WORKSPACE-LOCAL.md
 CONFIGURACAO-COMPLETA.md
 GUIA-PUBLICACAO.md
 PROJECT-SUMMARY.md
+QUICK-ACCESS.md
 
 # Arquivos temporários do Docker
 docker-compose.override.yml

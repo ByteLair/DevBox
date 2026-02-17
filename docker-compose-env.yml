@@ -7,7 +7,7 @@ services:
       args:
         SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
     container_name: workspace-dev
-    hostname: workspace-dev
+    hostname: DevBox
     restart: unless-stopped
     ports:
       - "2222:22"
