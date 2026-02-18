@@ -58,15 +58,6 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
 ENV GRADLE_HOME=/opt/gradle
 ENV PATH=$GRADLE_HOME/bin:$PATH
 
-# Install Spring Boot CLI
-RUN wget https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/3.2.1/spring-boot-cli-3.2.1-bin.tar.gz && \
-    tar xzf spring-boot-cli-3.2.1-bin.tar.gz -C /opt && \
-    ln -s /opt/spring-3.2.1 /opt/spring && \
-    rm spring-boot-cli-3.2.1-bin.tar.gz
-
-ENV SPRING_HOME=/opt/spring
-ENV PATH=$SPRING_HOME/bin:$PATH
-
 # Create developer user
 RUN useradd -m -s /bin/bash -G sudo developer && \
     echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
