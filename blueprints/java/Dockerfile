@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     nano \
     build-essential \
+    unzip \
     # Java
     openjdk-21-jdk \
     openjdk-17-jdk \
