@@ -1,6 +1,6 @@
 # 🚀 Docker Development Workspace
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.2.0)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.2.1)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
@@ -29,6 +29,10 @@ A simple Docker-based isolated development workspace system, similar to GitHub C
 - 🆕 **v1.2.0** Enhanced security & GitHub Actions fork protection
 - 🆕 **v1.2.0** Progress bars for long operations
 - 🆕 **v1.2.0** Port management commands
+- 🔧 **v1.2.1** Critical hotfix: SSH PATH propagation for node/go/java via `/etc/profile.d`
+- 🔧 **v1.2.1** Critical hotfix: fullstack PAM hang (`UsePAM no`) + account unlock
+- 🔧 **v1.2.1** Critical hotfix: double-sshd port conflict in entrypoint removed
+- 🔧 **v1.2.1** 8 production-tested blueprints (111/111 automated tests passing)
 
 ## 🛠️ Prerequisites
 
@@ -42,18 +46,14 @@ Choose the perfect environment for your project! All blueprints include SSH acce
 
 | Blueprint | Description | Key Tools | Best For | Docker Image |
 |-----------|-------------|-----------|----------|--------------|
-| **Minimal** | Ultra-lightweight Alpine Linux | SSH, Git, Curl | Learning, minimal overhead | `lyskdot/devbox-minimal` |
-| **Python** | Data Science & ML ready | Python 3.11/3.10, Jupyter, Pandas, TensorFlow, NumPy | Data Science, ML, Web APIs | `lyskdot/devbox-python` |
-| **Node.js** | Modern JavaScript/TypeScript | Node 20/18, npm, yarn, pnpm, Bun, TypeScript | Frontend, Backend, Full-stack JS | `lyskdot/devbox-node` |
-| **Go** | Fast compiled language | Go 1.21, gopls, delve debugger | Microservices, CLI tools, Systems | `lyskdot/devbox-go` |
-| **Rust** | Systems programming | Rust stable, cargo, rustfmt, clippy | Performance-critical apps, WebAssembly | `lyskdot/devbox-rust` |
-| **PHP** | Web development classic | PHP 8.2, Composer, Laravel, Nginx | WordPress, Laravel, APIs | `lyskdot/devbox-php` |
-| **Ruby** | Elegant web framework | Ruby 3.2, Rails 7, Bundler | Rails apps, automation scripts | `lyskdot/devbox-ruby` |
-| **Java** | Enterprise & Android | Java 17 LTS, Maven, Gradle, Spring Boot | Enterprise apps, Android | `lyskdot/devbox-java` |
+| **Python** | Data Science & APIs | Python 3.11, Jupyter, Pandas, NumPy | Data Science, ML, Web APIs | `lyskdot/devbox-python` |
+| **Node.js** | Modern JavaScript/TypeScript | Node 20, npm, yarn, pnpm, Bun, TypeScript | Frontend, Backend, Full-stack JS | `lyskdot/devbox-node` |
+| **Full-Stack** | Complete stack with databases | Node.js, Python, PostgreSQL 16, Redis, Nginx | Complex web applications | `lyskdot/devbox-fullstack` |
 | **Web** | HTML/CSS/JS static sites | Nginx, Node.js, static file serving | Landing pages, portfolios | `lyskdot/devbox-web` |
-| **Full-Stack** | Complete MEAN/MERN stack | Node.js, Python, PostgreSQL, Redis, Nginx | Complex web applications | `lyskdot/devbox-fullstack` |
-| **ML** | Deep Learning & AI | Python, CUDA support, PyTorch, TensorFlow, Jupyter | Neural networks, Computer Vision | `lyskdot/devbox-ml` |
-| **DevOps** | Infrastructure & automation | Docker, Kubernetes, Terraform, Ansible, AWS CLI | CI/CD, Infrastructure as Code | `lyskdot/devbox-devops` |
+| **DevOps** | Infrastructure & automation | Terraform, kubectl, Ansible, Helm, AWS CLI | CI/CD, Infrastructure as Code | `lyskdot/devbox-devops` |
+| **Go** | Fast compiled language | Go 1.22, gopls, delve debugger | Microservices, CLI tools, Systems | `lyskdot/devbox-go` |
+| **PHP** | Web development classic | PHP 8.2, Composer, Laravel, Nginx | WordPress, Laravel, APIs | `lyskdot/devbox-php` |
+| **Java** | Enterprise & Android | Java 21 LTS, Maven 3.9, Gradle 8.5 | Enterprise apps, Android | `lyskdot/devbox-java` |
 
 ### 🎯 Quick Start with Blueprints
 
@@ -87,7 +87,7 @@ docker run -d -p 2222:22 \
   lyskdot/devbox-ml:latest
 ```
 
-> 💡 **Tip:** All images are tagged with version numbers (e.g., `:1.1.0`, `:1.1`, `:1`) for stability. Use `:latest` for newest features.
+> 💡 **Tip:** Images are tagged as `:1.2` for stability. Use `:latest` for the newest features.
 
 ## �🚀 Installation Methods
 
@@ -230,7 +230,7 @@ Or using the alias (if configured):
 ssh my-workspace
 ```
 
-## 🆕 v1.2.0 New Features
+## 🆕 v1.2.x New Features
 
 ### Interactive Onboarding
 
@@ -659,51 +659,7 @@ go get github.com/gin-gonic/gin
 go run main.go
 ```
 
-**What you get:** Go 1.21, gopls, delve debugger, built for performance
-
-### 🦀 Systems Programming (Rust Blueprint)
-
-Perfect for: High-performance apps, WebAssembly, CLI tools
-
-```bash
-# Start environment
-bytelair up --template rust --name rust-project
-
-# Create new project
-cargo new my-cli-tool
-cd my-cli-tool
-
-# Add dependencies in Cargo.toml
-cargo add clap serde tokio
-
-# Build and run
-cargo build --release
-cargo run
-```
-
-**What you get:** Rust stable, cargo, rustfmt, clippy, rustup
-
-### 🤖 Machine Learning Training (ML Blueprint)
-
-Perfect for: Deep learning, neural networks, GPU training
-
-```bash
-# Start with GPU support (requires NVIDIA Docker)
-docker run -d --gpus all \
-  -p 2222:22 -p 8888:8888 \
-  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" \
-  -v ml-models:/home/developer \
-  --name ml-training \
-  lyskdot/devbox-ml:latest
-
-# Connect and train models
-ssh -p 2222 developer@localhost
-
-# CUDA, PyTorch, TensorFlow pre-installed
-python3 -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-```
-
-**What you get:** PyTorch, TensorFlow, CUDA drivers, Jupyter for experiments
+**What you get:** Go 1.22, gopls, delve debugger, built for performance
 
 ### 🛠️ Infrastructure as Code (DevOps Blueprint)
 
@@ -888,6 +844,24 @@ ports:
 ```bash
 docker exec workspace-dev bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"
 docker-compose -f docker-compose-env.yml restart
+```
+
+### ❌ Tools (node, go, mvn) not found after SSH login
+
+**Cause:** Docker `ENV PATH` is not propagated to SSH login shells.
+
+**Solution (v1.2.1+ images already include this fix):** Each blueprint ships `/etc/profile.d/devbox-*.sh` that sets the correct `PATH`. If connecting with `-t` (interactive shell), source `/etc/profile` manually or reconnect with a login shell:
+```bash
+ssh -t developer@localhost -p PORT 'bash -l'
+```
+
+### ❌ fullstack SSH hangs forever (ubuntu:24.04)
+
+**Cause:** PAM modules try to reach `systemd-userdbd` which doesn't exist in containers.
+
+**v1.2.1+ fix:** `UsePAM no` is now set in the fullstack `sshd_config` at build time. If using an older image:
+```bash
+docker exec <container> bash -c "sed -i 's/^UsePAM yes/UsePAM no/' /etc/ssh/sshd_config && kill -HUP \$(pgrep sshd)"
 ```
 
 ## 📚 Additional Documentation

@@ -4,6 +4,67 @@ All notable changes to ByteLair DevBox will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.1] - 2026-02-19
+
+### 🐛 Hotfix — Critical Runtime Bug Fixes
+
+This release fixes a set of critical bugs discovered through the automated test suite (`test-blueprints.sh`) after the v1.2.0 image publish. All **111 automated tests now pass** across all **8 blueprints**.
+
+#### Bug: SSH port 22 already in use on container startup
+**Affected:** node, go, java, fullstack (any blueprint rebuilt after v1.2.0)  
+**Symptom:** Container starts but SSH immediately fails — `Bind to port 22 on 0.0.0.0: Address already in use`  
+**Root Cause:** `entrypoint.sh` called `service ssh start` (background sshd) immediately followed by `exec /usr/sbin/sshd -D -e` (foreground sshd), causing two processes to compete for port 22. The foreground process then exited, bringing the container down.  
+**Fix:** Removed the redundant `service ssh start` line from `entrypoint.sh`. The `exec /usr/sbin/sshd -D -e` at the very end is now the sole sshd process (PID 1).
+
+#### Bug: node / go / java tools missing in SSH login shell
+**Affected:** node, go, java  
+**Symptom:** `node`, `npm`, `yarn`, `go`, `gopls`, `dlv`, `mvn`, `gradle` not found when connecting via SSH  
+**Root Cause:** Docker `ENV PATH=...` is available inside image build steps but is **not inherited by SSH login shells**. SSH sources `/etc/profile` → `/etc/profile.d/*.sh`. No blueprint had a profile.d entry.  
+**Fix:** Added `/etc/profile.d/devbox-{node,go,java}.sh` at the **end** of each Dockerfile (after all installations, to avoid Docker layer cache busts on reinstalls):
+- `devbox-node.sh` — exports `NVM_DIR`, `NODE_VERSION` bin path, and optional Bun path
+- `devbox-go.sh` — exports `GOROOT`, `GOPATH`, and `go/gopls/dlv` bin paths
+- `devbox-java.sh` — exports `JAVA_HOME`, `MAVEN_HOME`, `GRADLE_HOME` and their bin paths
+
+#### Bug: fullstack SSH hangs indefinitely
+**Affected:** fullstack (ubuntu:24.04)  
+**Symptom:** `ssh developer@localhost -p 3102` hangs forever — no response, no timeout, no error  
+**Root Cause:** Ubuntu 24.04 ships PAM modules (`pam_systemd_home`, `pam_loginuid`) that try to communicate with the `systemd-userdbd` socket. Inside a bare container with no systemd, this call blocks indefinitely.  
+**Fix:** Added `sed -i 's/^UsePAM yes/UsePAM no/'` to the SSH configuration step in the fullstack Dockerfile.
+
+#### Bug: fullstack rejects SSH key auth — "account is locked"
+**Affected:** fullstack (ubuntu:24.04)  
+**Symptom:** SSH quickly rejects with `User developer not allowed because account is locked`  
+**Root Cause:** Ubuntu 24.04's sshd is stricter about locked accounts (`!` in `/etc/shadow`). `useradd` without a password leaves the account in a locked state.  
+**Fix:** Added `usermod -p '*' developer` — sets an unusable-but-not-locked password placeholder, enabling SSH key auth without enabling password login.
+
+#### Bug: fullstack locale reports LANG=C.UTF-8
+**Affected:** fullstack (ubuntu:24.04)  
+**Symptom:** `locale` shows `LANG=C.UTF-8`; some tools emit locale warnings  
+**Root Cause:** ubuntu:24.04 does not generate the `en_US.UTF-8` locale by default.  
+**Fix:** Added `apt-get install -y locales && locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
+
+#### Bug: node Bun install breaks build on intermittent network timeout
+**Affected:** node  
+**Symptom:** Docker build fails with a network error mid-build during `curl -fsSL https://bun.sh/install | bash`  
+**Fix:** Made Bun install non-fatal: `curl -fsSL https://bun.sh/install | bash || echo "Bun install optional — skipped"`
+
+### 🧪 Test Suite Improvements
+
+- Added `ServerAliveInterval=3` and `ServerAliveCountMax=2` to the SSH ControlMaster loop in `test-blueprints.sh`, preventing terminal hang if a blueprint's SSH server accepts the TCP connection but stalls during authentication.
+
+### 📦 Blueprint Changes
+
+- Reduced from **12 to 8 active blueprints**: removed `minimal` (Alpine), `ml`, `ruby`, `rust` — focusing quality over quantity
+- All 8 remaining blueprints fully tested and all 111 tests passing: **python, node, fullstack, web, devops, go, php, java**
+- All images published to Docker Hub as `lyskdot/devbox-*:1.2`
+
+### 📦 Commits
+
+- `8855a9d` - fix: corrige todos os bugs dos 8 blueprints v1.2
+
+---
+
 ## [1.2.0] - 2026-02-17
 
 ### 🔐 Security Enhancements

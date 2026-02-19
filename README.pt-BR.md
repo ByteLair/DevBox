@@ -1,6 +1,6 @@
 # 🚀 Workspaces Isolados On-Premise
 
-[![Versão](https://img.shields.io/badge/versão-1.0.0-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.0.0)
+[![Versão](https://img.shields.io/badge/versão-1.2.1-blue.svg)](https://github.com/ByteLair/DevBox/releases/tag/v1.2.1)
 [![Licença](https://img.shields.io/badge/licença-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-pronto-brightgreen.svg)](https://www.docker.com/)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Remote%20SSH-007ACC.svg)](https://code.visualstudio.com/docs/remote/ssh)
@@ -15,16 +15,50 @@ Sistema simples de workspaces isolados para desenvolvimento, similar ao GitHub C
 - ✅ Persistência de dados em `/home/developer`
 - ✅ Usuário sem privilégios root (mas com sudo)
 - ✅ Acesso via VS Code Remote SSH
-- ✅ Node.js 20 LTS e Python 3.10 pré-instalados
 - ✅ Git configurado
 - ✅ Recursos limitados por container (CPU/RAM)
 - ✅ Autenticação via chave SSH (passwordless)
 - ✅ Armazenamento configurável (50GB padrão)
+- 🆕 **v1.2.0** Rate limiting SSH + logging de auditoria
+- 🆕 **v1.2.0** Wizard de onboarding interativo (`bytelair init`)
+- 🆕 **v1.2.0** Snapshots de workspace (backup & restore)
+- 🆕 **v1.2.0** Sincronização de settings (VS Code, dotfiles, extensões)
+- 🆕 **v1.2.0** Health checks em todos os containers
+- 🔧 **v1.2.1** Hotfix crítico: PATH do node/go/java via `/etc/profile.d`
+- 🔧 **v1.2.1** Hotfix crítico: PAM hang no fullstack + conta desbloqueada
+- 🔧 **v1.2.1** 8 blueprints testados (111/111 testes automatizados passando)
+
+## 🛠️ Blueprints Disponíveis
+
+Escolha o ambiente ideal para seu projeto. Todos incluem SSH, suporte a Tailscale VPN e são otimizados para VS Code Remote.
+
+| Blueprint | Descrição | Ferramentas | Ideal Para | Imagem Docker |
+|-----------|-----------|-------------|------------|---------------|
+| **Python** | Data Science & APIs | Python 3.11, Jupyter, Pandas, NumPy | Data Science, ML, Web APIs | `lyskdot/devbox-python` |
+| **Node.js** | JavaScript/TypeScript moderno | Node 20, npm, yarn, pnpm, Bun | Frontend, Backend, Full-stack JS | `lyskdot/devbox-node` |
+| **Full-Stack** | Stack completa com bancos de dados | Node.js, Python, PostgreSQL 16, Redis, Nginx | Aplicações web completas | `lyskdot/devbox-fullstack` |
+| **Web** | Sites estáticos HTML/CSS/JS | Nginx, Node.js | Landing pages, portfólios | `lyskdot/devbox-web` |
+| **DevOps** | Infraestrutura & automação | Terraform, kubectl, Ansible, Helm, AWS CLI | CI/CD, Infrastructure as Code | `lyskdot/devbox-devops` |
+| **Go** | Linguagem compilada rápida | Go 1.22, gopls, delve | Microsserviços, CLIs, Sistemas | `lyskdot/devbox-go` |
+| **PHP** | Desenvolvimento web clássico | PHP 8.2, Composer, Laravel, Nginx | WordPress, Laravel, APIs | `lyskdot/devbox-php` |
+| **Java** | Enterprise & Android | Java 21 LTS, Maven 3.9, Gradle 8.5 | Apps enterprise, Android | `lyskdot/devbox-java` |
+
+```bash
+# Iniciar com a CLI (recomendado)
+bytelair up --template python   # ou node, go, java, fullstack...
+bytelair connect                 # Abre o VS Code automaticamente
+
+# Ou diretamente pelo Docker
+docker run -d -p 2222:22 \
+  -e SSH_PUBLIC_KEY="$(cat ~/.ssh/id_ed25519.pub)" \
+  -v meu-workspace:/home/developer \
+  lyskdot/devbox-python:1.2
+```
 
 ## 🛠️ Pré-requisitos
 
 - Docker e Docker Compose instalados
-- Par de chaves SSH (pública/privada)
+- Par de chaves SSH (ed25519 recomendado: `ssh-keygen -t ed25519`)
 - VS Code com extensão "Remote - SSH" (opcional, mas recomendado)
 
 ## 🚀 Métodos de Instalação
