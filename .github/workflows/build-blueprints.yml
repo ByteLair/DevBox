@@ -34,7 +34,7 @@ jobs:
         run: |
           # Determinar blueprints
           if [[ "${{ github.event.inputs.blueprints }}" == "all" ]] || [[ -z "${{ github.event.inputs.blueprints }}" ]]; then
-            echo 'blueprints=["minimal","python","node","fullstack","web","ml","devops","go","rust","php","ruby","java"]' >> $GITHUB_OUTPUT
+            echo 'blueprints=["python","node","fullstack","web","devops","go","php","java"]' >> $GITHUB_OUTPUT
           else
             # Convert comma-separated list to JSON array
             IFS=',' read -ra ADDR <<< "${{ github.event.inputs.blueprints }}"
@@ -71,10 +71,8 @@ jobs:
       
       - name: Preparar entrypoint.sh
         run: |
-          if [ "${{ matrix.blueprint }}" != "minimal" ]; then
-            cp entrypoint.sh blueprints/${{ matrix.blueprint }}/
-            echo "✅ Entrypoint copiado para ${{ matrix.blueprint }}"
-          fi
+          cp entrypoint.sh blueprints/${{ matrix.blueprint }}/
+          echo "✅ Entrypoint copiado para ${{ matrix.blueprint }}"
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

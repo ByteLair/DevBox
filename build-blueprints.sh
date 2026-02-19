@@ -12,21 +12,17 @@ NC='\033[0m'
 
 # Docker Hub username
 DOCKER_USER="lyskdot"
-VERSION="1.1.0"
+VERSION="1.2"
 
-# Blueprint list
+# Blueprint list (8 blueprints)
 BLUEPRINTS=(
-    "minimal"
     "python"
     "node"
     "fullstack"
     "web"
-    "ml"
     "devops"
     "go"
-    "rust"
     "php"
-    "ruby"
     "java"
 )
 
@@ -38,10 +34,8 @@ echo ""
 # Copy entrypoint.sh to each blueprint directory
 echo -e "${YELLOW}📋 Preparing blueprint directories...${NC}"
 for blueprint in "${BLUEPRINTS[@]}"; do
-    if [ "$blueprint" != "minimal" ]; then
-        cp entrypoint.sh blueprints/$blueprint/
-        echo -e "${GREEN}✓${NC} Copied entrypoint.sh to blueprints/$blueprint/"
-    fi
+    cp entrypoint.sh blueprints/$blueprint/
+    echo -e "${GREEN}✓${NC} Copied entrypoint.sh to blueprints/$blueprint/"
 done
 
 # Build option
