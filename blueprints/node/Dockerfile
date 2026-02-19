@@ -72,8 +72,8 @@ RUN npm install -g \
     dotenv-cli \
     cross-env
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash
+# Install Bun (non-fatal - optional tool)
+RUN curl -fsSL https://bun.sh/install | bash || echo "Bun install optional - skipped"
 ENV PATH="/root/.bun/bin:$PATH"
 
 # Create developer user
@@ -91,6 +91,13 @@ RUN mkdir -p /home/developer/.ssh && \
     chown -R developer:developer /home/developer && \
     # Install nvm for developer user
     sudo -u developer bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash'
+
+# Persist PATH for all SSH login shells (must come after all tool installs)
+RUN printf 'export NVM_DIR=%s\nexport PATH=%s/versions/node/v%s/bin:$PATH\n' \
+    "${NVM_DIR}" "${NVM_DIR}" "${NODE_VERSION}" \
+    > /etc/profile.d/devbox-node.sh && \
+    [ -f /root/.bun/bin/bun ] && echo 'export PATH=/root/.bun/bin:$PATH' >> /etc/profile.d/devbox-node.sh || true && \
+    chmod +x /etc/profile.d/devbox-node.sh
 
 # Set working directory
 WORKDIR /home/developer

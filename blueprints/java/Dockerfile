@@ -58,6 +58,10 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
 ENV GRADLE_HOME=/opt/gradle
 ENV PATH=$GRADLE_HOME/bin:$PATH
 
+# Persist PATH for SSH login shells
+RUN printf 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64\nexport MAVEN_HOME=/opt/maven\nexport GRADLE_HOME=/opt/gradle\nexport PATH=/opt/maven/bin:/opt/gradle/bin:/usr/lib/jvm/java-21-openjdk-amd64/bin:$PATH\n' > /etc/profile.d/devbox-java.sh && \
+    chmod +x /etc/profile.d/devbox-java.sh
+
 # Create developer user
 RUN useradd -m -s /bin/bash -G sudo developer && \
     echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -71,6 +75,11 @@ RUN mkdir /var/run/sshd && \
 # Setup developer environment
 RUN mkdir -p /home/developer/.ssh /home/developer/.m2 && \
     chown -R developer:developer /home/developer
+
+# Persist PATH for SSH login shells (must come after tool installs)
+RUN printf 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64\nexport MAVEN_HOME=/opt/maven\nexport GRADLE_HOME=/opt/gradle\nexport PATH=/opt/maven/bin:/opt/gradle/bin:/usr/lib/jvm/java-21-openjdk-amd64/bin:$PATH\n' \
+    > /etc/profile.d/devbox-java.sh && \
+    chmod +x /etc/profile.d/devbox-java.sh
 
 # Set working directory
 WORKDIR /home/developer

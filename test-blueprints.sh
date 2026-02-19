@@ -121,6 +121,8 @@ test_blueprint() {
                -o ControlMaster=yes \
                -o ControlPath="$cm_sock" \
                -o ControlPersist=300 \
+               -o ServerAliveInterval=3 \
+               -o ServerAliveCountMax=2 \
                -p "$port" developer@localhost \
                -fN 2>/dev/null; then
             ssh_ok=true; break

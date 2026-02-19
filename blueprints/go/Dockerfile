@@ -42,6 +42,10 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=/home/developer/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
+# Persist PATH for SSH login shells
+RUN printf 'export GOROOT=/usr/local/go\nexport GOPATH=/home/developer/go\nexport PATH=/home/developer/go/bin:/usr/local/go/bin:$PATH\n' > /etc/profile.d/devbox-go.sh && \
+    chmod +x /etc/profile.d/devbox-go.sh
+
 # Install Go tools
 RUN go install golang.org/x/tools/gopls@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
@@ -63,6 +67,11 @@ RUN mkdir /var/run/sshd && \
 # Setup developer environment
 RUN mkdir -p /home/developer/.ssh /home/developer/go && \
     chown -R developer:developer /home/developer
+
+# Persist PATH for SSH login shells (must come after all tool installs)
+RUN printf 'export GOROOT=/usr/local/go\nexport GOPATH=/home/developer/go\nexport PATH=/home/developer/go/bin:/usr/local/go/bin:$PATH\n' \
+    > /etc/profile.d/devbox-go.sh && \
+    chmod +x /etc/profile.d/devbox-go.sh
 
 # Set working directory
 WORKDIR /home/developer

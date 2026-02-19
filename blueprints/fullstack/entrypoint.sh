@@ -164,6 +164,7 @@ fi
 # SSH Service
 # ============================================
 echo "🔌 Starting SSH service..."
+# sshd started below via exec as PID 1
 
 # Log startup
 echo "$(date -Iseconds) - CONTAINER_START: workspace=$(hostname) type=$(cat /etc/blueprint-type 2>/dev/null || echo 'base')" >> /var/log/devbox/audit.log

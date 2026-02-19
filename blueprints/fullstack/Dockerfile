@@ -43,6 +43,11 @@ RUN apt-get update && apt-get install -y \
 # Install Tailscale
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
+# Fix locale (ubuntu:24.04 does not generate en_US.UTF-8 by default)
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+
 # Install Node.js 20 LTS
 ENV NODE_VERSION=20.11.0
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -86,13 +91,15 @@ RUN sed -i 's/^bind 127.0.0.1/bind 0.0.0.0/' /etc/redis/redis.conf
 
 # Create developer user
 RUN useradd -m -s /bin/bash -G sudo,docker developer && \
-    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    usermod -p '*' developer
 
 # Configure SSH
 RUN mkdir /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/^UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
 
 # Setup developer environment
 RUN mkdir -p /home/developer/.ssh && \
