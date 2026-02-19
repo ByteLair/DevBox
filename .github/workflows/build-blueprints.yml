@@ -20,7 +20,7 @@ on:
 
 env:
   DOCKER_USER: lyskdot
-  VERSION: '1.1.0'
+  VERSION: '1.2'
 
 jobs:
   build-matrix:
