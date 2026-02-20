@@ -95,20 +95,26 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "major=$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
           echo "minor=$(echo $VERSION | cut -d. -f1-2)" >> $GITHUB_OUTPUT
-      
-      - name: Build and push ${{ matrix.blueprint }} (Self-Hosted)
+
+      - name: Retag existing image (Self-Hosted)
         if: needs.build-matrix.outputs.use_self_hosted == 'true'
         run: |
-          cd blueprints/${{ matrix.blueprint }}
-          docker build -t ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest \
-                       -t ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.version }} \
-                       -t ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.minor }} \
-                       -t ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.major }} .
-          docker push ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:latest
-          docker push ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.version }}
-          docker push ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.minor }}
-          docker push ${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}:${{ steps.version.outputs.major }}
-          echo "✅ ${{ matrix.blueprint }} built and pushed!"
+          BASE="${{ env.DOCKER_USER }}/devbox-${{ matrix.blueprint }}"
+          MINOR="${{ steps.version.outputs.minor }}"
+          FULL="${{ steps.version.outputs.version }}"
+          MAJOR="${{ steps.version.outputs.major }}"
+
+          echo "Pulling base image ${BASE}:${MINOR}..."
+          docker pull ${BASE}:${MINOR}
+
+          docker tag ${BASE}:${MINOR} ${BASE}:${FULL}
+          docker tag ${BASE}:${MINOR} ${BASE}:latest
+          docker tag ${BASE}:${MINOR} ${BASE}:${MAJOR}
+
+          docker push ${BASE}:${FULL}
+          docker push ${BASE}:latest
+          docker push ${BASE}:${MAJOR}
+          echo "✅ ${{ matrix.blueprint }} retagged and pushed!"
       
       - name: Build and push ${{ matrix.blueprint }} (GitHub-Hosted)
         if: needs.build-matrix.outputs.use_self_hosted != 'true'
